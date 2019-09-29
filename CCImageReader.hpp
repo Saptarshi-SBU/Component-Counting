@@ -44,15 +44,34 @@ enum class CCImageSourceType {
     UNSUPPORTED,
 };
 
-   // data source
+// selection for desired number of desiredChannels
+enum class CCColorChannels {
+
+    DEFAULT,
+
+    GRAY,
+
+    GRAY2,
+
+    RGB,  // digital color-space
+
+    RGBA, // with aplha channel
+
+};
+
+// jpeg loss quality
+const static int CCJPEG_LOSS = 100;
+
+// data source
 class CCImageReader : public CCDataObject {
 
    public:
 
+   CCImageReader();
+
    CCImageReader(const char *filename, CCImageSourceType type);
 
-   CCImageReader(const char *filename, CCImageSourceType type,
-        int width, int height, int num_channels, unsigned char* data);
+   CCImageReader(const char *filename, CCImageSourceType type, CCColorChannels color);
 
    CCImageReader(const CCImageReader &srcImg);
 
@@ -64,13 +83,37 @@ class CCImageReader : public CCDataObject {
 
    int getNumChannels(void);
 
+   int getSize(void);
+
+   CCImageSourceType getFormat(void);
+
+   CCColorChannels getColorChannels(void);
+
    unsigned char *getDataBlob(void);
+
+   std::string generateUUIDName(void);
+
+   void setFilename(const char *);
+
+   void setWidth(int);
+
+   void setHeight(int);
+
+   void setNumChannels(int);
+
+   void setFormat(CCImageSourceType);
+
+   void setColorChannels(CCColorChannels);
+
+   void setDataBlob(unsigned char *);
 
    bool Load(void);
 
    bool Save(void);
 
    bool Destroy(void);
+
+   CCImageReader ConvertRGB2GRAY(bool &);
 
    private:
 
@@ -79,6 +122,9 @@ class CCImageReader : public CCDataObject {
 
    // image type
    CCImageSourceType type_;
+
+   // color space
+   CCColorChannels desiredChannels_;
 
    // image width pixels
    int width_;

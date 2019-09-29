@@ -32,7 +32,7 @@
 
 #define MAX_UUIDS 100UL
 
-#define TEST_IMAGE_PNG "images/triangle.bmp"
+#define TEST_IMAGE_PNG "images/shapes/triangles/drawing(3).png"
 
 int uuid_dup_test(void) {
     std::set<std::string> uuid_strings;
@@ -57,6 +57,20 @@ int img_load_test(void) {
     return 0;
 }
 
+int img_convert_RGB2GRAY_test(void) {
+    bool ok;
+    CCImageReader im(TEST_IMAGE_PNG, CCImageSourceType::PNG, CCColorChannels::RGB);
+    CCImageReader im2;
+    assert(im.Load());
+    im2 = im.ConvertRGB2GRAY(ok);
+    assert(ok);
+    assert(im2.Save());
+    assert(im.Destroy());
+    assert(im2.Destroy());
+    std::cout << __func__ << ":" <<  "pass" << std::endl;
+    return 0;
+}
+
 int dataset_load_test(void) {
     CCDataSet dataSet(TEST_IMAGE_PNG, CCDataSourceType::IMG);
     assert(dataSet.Load());
@@ -68,6 +82,7 @@ int dataset_load_test(void) {
 int main(void) {
     uuid_dup_test();
     img_load_test();
+    img_convert_RGB2GRAY_test();
     dataset_load_test();
     return 0;
 }
