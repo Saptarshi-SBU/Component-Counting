@@ -38,9 +38,9 @@ class CCDataObject {
 
         virtual ~CCDataObject() {}
 
-        virtual bool Load(void) { return true; }
+        virtual bool Load(void) { return false; }
 
-        virtual bool Destroy(void) { return true; }
+        virtual bool Destroy(void) { return false; }
 
     protected:
 

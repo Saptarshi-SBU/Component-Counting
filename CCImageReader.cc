@@ -35,22 +35,33 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
+//If class members are neither mentioned in a constructor’s member initializer
+//list nor have a brace-or-equal-initializer, then they get default-initialized.
+//That means, that for class types the default constructor is called, but for
+//any other types like enums or built in types like int, double, pointers, no
+//initialization happens at all.
+//
+//This applies for each element of array, and, as a corollary, it applies for
+//plain old data classes as well, as their default constructor in turn
+//default-initializes all of their members. No initialization means your
+//member variables possibly contain garbage values.
+
 CCImageReader::CCImageReader():
     CCDataObject(),
-    filename_(nullptr),
-    data_(nullptr) { }
+    type_(CCImageSourceType::UNSUPPORTED),
+    desiredChannels_(CCColorChannels::DEFAULT) {}
 
 CCImageReader::CCImageReader(const char *filename, CCImageSourceType type) :
     CCDataObject(),
     filename_(filename),
     type_(type),
-    desiredChannels_(CCColorChannels::DEFAULT) { }
+    desiredChannels_(CCColorChannels::DEFAULT) {}
 
 CCImageReader::CCImageReader(const char *filename, CCImageSourceType type, CCColorChannels channels) :
     CCDataObject(),
     filename_(filename),
     type_(type),
-    desiredChannels_(channels) { }
+    desiredChannels_(channels) {}
 
 CCImageReader::CCImageReader(const CCImageReader &srcImg) {
     width_  = srcImg.width_;
@@ -122,12 +133,18 @@ bool CCImageReader::Load() {
     if (type_ >= CCImageSourceType::UNSUPPORTED)
         goto error;
 
+    if (data_ != nullptr)
+        goto skip;
+
     switch (desiredChannels_) {
     case CCColorChannels::DEFAULT:
         data_ = stbi_load(filename_, &width_, &height_, &numChannels_, 0);
         break;
     case CCColorChannels::GRAY:
         data_ = stbi_load(filename_, &width_, &height_, &numChannels_, STBI_grey);
+        break;
+    case CCColorChannels::GRAY2:
+        data_ = stbi_load(filename_, &width_, &height_, &numChannels_, STBI_grey_alpha);
         break;
     case CCColorChannels::RGB:
         data_ = stbi_load(filename_, &width_, &height_, &numChannels_, STBI_rgb);
@@ -140,6 +157,7 @@ bool CCImageReader::Load() {
         break;
     }
 
+skip:
     if (data_ != nullptr)
         return true;
 
@@ -161,8 +179,8 @@ std::string CCImageReader::generateUUIDName(void) {
 }
 
 bool CCImageReader::Save() {
+    int ret;
     std::string name;
-    int ret, req_channels = static_cast<int> (desiredChannels_);
 
     if ((data_ == nullptr) || (width_ == 0) || (height_ == 0))
         goto error;
@@ -174,13 +192,13 @@ bool CCImageReader::Save() {
 
     switch (type_) {
     case CCImageSourceType::PNG:
-        ret = stbi_write_png(name.c_str(), width_, height_, req_channels, data_, width_ * req_channels);
+        ret = stbi_write_png(name.c_str(), width_, height_, numChannels_, data_, width_ * numChannels_);
         break;
     case CCImageSourceType::BMP:
-        ret = stbi_write_bmp(name.c_str(), width_, height_, req_channels, data_);
+        ret = stbi_write_bmp(name.c_str(), width_, height_, numChannels_, data_);
         break;
     case CCImageSourceType::JPG:
-        ret = stbi_write_jpg(name.c_str(), width_, height_, req_channels, data_, CCJPEG_LOSS);
+        ret = stbi_write_jpg(name.c_str(), width_, height_, numChannels_, data_, CCJPEG_LOSS);
     default:
         ret = 0;
         break;
@@ -218,7 +236,7 @@ CCImageReader CCImageReader::ConvertRGB2GRAY(bool &ok) {
     } else
         goto error;
 
-    pData = (unsigned char *) malloc(sizeof(unsigned char) * newImg.getWidth() *
+    pData = (unsigned char *) stbi__malloc(sizeof(unsigned char) * newImg.getWidth() *
         newImg.getHeight() * newImg.getNumChannels());
     if (!pData)
         goto error;

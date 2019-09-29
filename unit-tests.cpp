@@ -32,7 +32,9 @@
 
 #define MAX_UUIDS 100UL
 
-#define TEST_IMAGE_PNG "images/shapes/triangles/drawing(3).png"
+#define TEST_IMAGE_DIR "images/shapes/triangles/"
+
+#define TEST_IMAGE_PNG "images/shapes/triangles/drawing(4).png"
 
 int uuid_dup_test(void) {
     std::set<std::string> uuid_strings;
@@ -51,7 +53,7 @@ int uuid_dup_test(void) {
 int img_load_test(void) {
     CCImageReader im(TEST_IMAGE_PNG, CCImageSourceType::PNG);
     assert(im.Load());
-    assert(im.Save());
+    //assert(im.Save());
     assert(im.Destroy());
     std::cout << __func__ << ":" <<  "pass" << std::endl;
     return 0;
@@ -71,10 +73,24 @@ int img_convert_RGB2GRAY_test(void) {
     return 0;
 }
 
-int dataset_load_test(void) {
+int dataset_file_load_test(void) {
     CCDataSet dataSet(TEST_IMAGE_PNG, CCDataSourceType::IMG);
-    assert(dataSet.Load());
+    assert(dataSet.LoadFile());
     assert(dataSet.getNumRecords());
+    dataSet.Destroy();
+    std::cout << __func__ << ":" <<  "pass" << std::endl;
+    return 0;
+}
+
+int dataset_dir_load_test(void) {
+    CCDataSet dataSet(TEST_IMAGE_DIR, CCDataSourceType::IMG);
+    assert(dataSet.LoadDirectory());
+    assert(dataSet.getNumRecords());
+    for (auto i : dataSet.dataItems_) {
+        CCImageReader *im = dynamic_cast<CCImageReader*>(i);
+        im->Load();
+    }
+    dataSet.Destroy();
     std::cout << __func__ << ":" <<  "pass" << std::endl;
     return 0;
 }
@@ -83,6 +99,7 @@ int main(void) {
     uuid_dup_test();
     img_load_test();
     img_convert_RGB2GRAY_test();
-    dataset_load_test();
+    dataset_file_load_test();
+    dataset_dir_load_test();
     return 0;
 }

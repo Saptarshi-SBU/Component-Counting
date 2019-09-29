@@ -45,7 +45,9 @@ class CCDataSet : public CCDataObject {
 
     ~CCDataSet();
 
-    bool Load(void);
+    bool LoadFile(void);
+
+    bool LoadDirectory(void);
 
     bool Destroy(void);
 
@@ -64,8 +66,10 @@ class CCDataSet : public CCDataObject {
     // source type
     CCDataSourceType type_;
 
+public:
+
     // list of objects tracked by dataset
-    std::list<CCDataObject> dataItems_;
+    std::list<CCDataObject *> dataItems_;
 };
 
 #endif

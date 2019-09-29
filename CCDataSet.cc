@@ -28,6 +28,14 @@
  *  at run-time (say data from camera frame).
  *
  */
+#define _POSIX_SOURCE
+
+#include <dirent.h>
+
+#include <list>
+#include <iostream>
+#include <cassert>
+
 #include "CCDataSet.hpp"
 #include "CCImageReader.hpp"
 
@@ -36,13 +44,13 @@ CCDataSet::CCDataSet(const void *source, CCDataSourceType type) :
 
 CCDataSet::~CCDataSet() {}
 
-bool CCDataSet::Load(void) {
+bool CCDataSet::LoadFile(void) {
     bool done = false;
     switch (type_) {
     case CCDataSourceType::IMG: {
         // TBD : Fix attributes
-        CCImageReader im(static_cast<const char*>(source_), CCImageSourceType::PNG);
-        done = im.Load();
+        CCImageReader *im = new CCImageReader(static_cast<const char*>(source_), CCImageSourceType::PNG);
+        done = im->Load();
         if (done)
             dataItems_.push_back(im);
         break;
@@ -53,9 +61,51 @@ bool CCDataSet::Load(void) {
     return done;
 }
 
+bool CCDataSet::LoadDirectory(void) {
+    DIR *dir;
+    bool done = false;
+    struct dirent *entry;
+    std::list<struct dirent *> direntList;
+
+    dir = opendir(static_cast<const char *>(source_));
+    if (dir == nullptr)
+        goto error;
+
+    while ((entry = readdir(dir)) != nullptr)
+        direntList.push_back(entry);
+
+    switch (type_) {
+    case CCDataSourceType::IMG: {
+        for (auto &i : direntList) {
+            if ((strcmp(i->d_name, ".") != 0) && (strcmp(i->d_name, "..") != 0)) {
+                std::string path(static_cast<const char*>(source_));
+                path.append(i->d_name);
+                CCImageReader *imp = new CCImageReader(path.c_str(), CCImageSourceType::PNG);
+                done = imp->Load();
+                if (!done) {
+                    std::cerr << path << std::endl;
+                    assert(0);
+                }
+                // prevent object slicing
+                dataItems_.push_back(dynamic_cast<CCDataObject *>(imp));
+            }
+        }
+        break;
+    }
+    default:
+        break;
+    }
+
+    closedir(dir);
+error:
+    return done;
+}
+
 bool CCDataSet::Destroy() {
-    for (auto &i : dataItems_)
-        i.Destroy();
+    for (auto &item : dataItems_) {
+        item->Destroy();
+        delete item;
+    }
     dataItems_.clear();
     return true;
 }

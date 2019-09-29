@@ -107,18 +107,18 @@ class CCImageReader : public CCDataObject {
 
    void setDataBlob(unsigned char *);
 
-   bool Load(void);
+   virtual bool Load(void);
 
    bool Save(void);
 
-   bool Destroy(void);
+   virtual bool Destroy(void);
 
    CCImageReader ConvertRGB2GRAY(bool &);
 
    private:
 
    // file name
-   const char *filename_;
+   const char *filename_ {nullptr};
 
    // image type
    CCImageSourceType type_;
@@ -136,7 +136,7 @@ class CCImageReader : public CCDataObject {
    int numChannels_;
 
    // image blob
-   unsigned char *data_;
+   unsigned char *data_ {nullptr};
 
 };
 
