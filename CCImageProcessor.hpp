@@ -30,111 +30,40 @@
 #ifndef _CCIMAGEPROCESSOR_HPP_
 #define _CCIMAGEPROCESSOR_HPP_
 
+#include <memory>
+
+#include "CCConvolutionFilter.hpp"
+#include "CCGaussianFilter.hpp"
+
+#include "CCDerivativeFilter.hpp"
 #include "CCImageReader.hpp"
-
-// Image Format
-enum class CCImageCVFilters {
-
-    GAUSSIAN_BLUR,
-
-    BOX_FILTER,
-
-    MEDIAN_FILTER,
-};
-
-
-// Base Class
-class CCImageConvolutionFilter {
-
-    public:
-
-    CCImageConvolutionFilter() : dimX(0), dimY(0) {}
-
-    CCImageConvolutionFilter(int dX, int dY) : dimX(dX), dimY(dY) {} 
-
-    CCImageConvolutionFilter(const CCImageConvolutionFilter &cv) {
-        dimX = cv.dimX;
-        dimY = cv.dimY;
-    } 
-
-    CCImageConvolutionFilter& operator=(const CCImageConvolutionFilter &dv) {
-        dimX     = dv.dimX;
-        dimY     = dv.dimY;
-        return *this;
-    }
-
-    virtual ~CCImageConvolutionFilter() {}
-
-    virtual void Run(CCImageReader &img) {}
-
-    protected:
-
-    int dimX;
-
-    int dimY;
-};
-
-enum class CCImageEDFilter {
-
-    SOEBEL,
-};
-
-// Base Class
-class CCImageDerivativeFilter {
-
-    public:
-
-    CCImageDerivativeFilter() : dimX(0), dimY(0), variance(0.0) {}
-
-    CCImageDerivativeFilter(int dX, int dY, float var) : dimX(dX), dimY(dY), variance(var) {}
-
-    CCImageDerivativeFilter(const CCImageDerivativeFilter &dv) {
-        dimX     = dv.dimX;
-        dimY     = dv.dimY;
-        variance = dv.variance;
-    }
-
-    CCImageDerivativeFilter& operator=(const CCImageDerivativeFilter &dv) {
-        dimX     = dv.dimX;
-        dimY     = dv.dimY;
-        variance = dv.variance;
-        return *this;
-    }
-
-    virtual ~CCImageDerivativeFilter() {}
-
-    virtual void Run(CCImageReader &img) {}
-
-    protected:
-
-    int dimX;
-
-    int dimY;
-
-    float variance;
-};
 
 // Image processor
 class CCImageProcessor {
 
    public:
 
-   CCImageProcessor(CCImageConvolutionFilter& cv, CCImageDerivativeFilter &dv) : cvFilter(cv), dvFilter(dv) {}
+   CCImageProcessor() {}
 
-   CCImageProcessor(const CCImageProcessor &imgP) {
-        //cvFilter = imgP.cvFilter;
-        //dvFilter = imgP.dvFilter;
-   }
+   CCImageProcessor(std::shared_ptr<CCImageConvolutionFilter> pCV,
+        std::shared_ptr<CCImageDerivativeFilter> pDV) :
+        pCV_(pCV), pDV_(pDV) {}
+
+   CCImageProcessor(const CCImageProcessor &proc) :
+        pCV_(proc.pCV_), pDV_(proc.pDV_) {}
 
    virtual ~CCImageProcessor() {}
 
-   virtual void Run(void) {}
+   virtual void Run(CCImageReader &img) {
+       pCV_->Run(img);
+       pDV_->Run(img);
+   }
 
    private:
 
-   CCImageConvolutionFilter cvFilter;
+   std::shared_ptr<CCImageConvolutionFilter> pCV_;
 
-   CCImageDerivativeFilter dvFilter;
+   std::shared_ptr<CCImageDerivativeFilter> pDV_;
 };
 
 //
@@ -145,7 +74,6 @@ class CCImageProcessor {
 // option would lead to a huge list of constructors for this class.
 // So we will create a builder class.
 class CCImageProcessorBuilder {
-    
     public:
 
     // Note: requires default constructors for Filter classes
@@ -154,18 +82,26 @@ class CCImageProcessorBuilder {
     virtual ~CCImageProcessorBuilder() {}
 
     virtual CCImageProcessor build() {
-        return CCImageProcessor(cvFilter, dvFilter);
+        return CCImageProcessor(pCV_, pDV_);
     }
 
-    virtual CCImageProcessorBuilder& addAveragingFilter(CCImageCVFilters type, int dimX, int dimY);
+    virtual CCImageProcessorBuilder&
+        addGaussianFilter(int dimX, int dimY, float variance) {
+            pCV_.reset(new CCGaussianFilter(dimX, dimY, variance));
+            return *this;
+    }
 
-    virtual CCImageProcessorBuilder& addDerivativeFilter(CCImageEDFilter type, int dimX, int dimY, float variance);
+    virtual CCImageProcessorBuilder&
+        addSoebelFilter(int dimX, int dimY, float variance) {
+            pDV_.reset(new CCImageDerivativeFilter(dimX, dimY, variance));
+            return *this;
+    }
 
     private:
 
-    CCImageConvolutionFilter cvFilter;
+    std::shared_ptr<CCImageConvolutionFilter> pCV_;
 
-    CCImageDerivativeFilter dvFilter;
+    std::shared_ptr<CCImageDerivativeFilter> pDV_;
 };
 
 #endif
