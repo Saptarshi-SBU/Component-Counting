@@ -36,6 +36,8 @@
 #include "CCGaussianFilter.hpp"
 
 #include "CCDerivativeFilter.hpp"
+#include "CCSoebelFilter.hpp"
+
 #include "CCImageReader.hpp"
 
 // Image processor
@@ -93,7 +95,7 @@ class CCImageProcessorBuilder {
 
     virtual CCImageProcessorBuilder&
         addSoebelFilter(int dimX, int dimY, float variance) {
-            pDV_.reset(new CCImageDerivativeFilter(dimX, dimY, variance));
+            pDV_.reset(new CCSoebelFilter(dimX, dimY, variance));
             return *this;
     }
 
