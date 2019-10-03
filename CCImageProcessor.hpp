@@ -38,6 +38,8 @@
 #include "CCDerivativeFilter.hpp"
 #include "CCSoebelFilter.hpp"
 
+#include "CCShapeDetector.hpp"
+
 #include "CCImageReader.hpp"
 
 // Image processor
@@ -51,14 +53,23 @@ class CCImageProcessor {
         std::shared_ptr<CCImageDerivativeFilter> pDV) :
         pCV_(pCV), pDV_(pDV) {}
 
+   CCImageProcessor(std::shared_ptr<CCImageConvolutionFilter> pCV,
+        std::shared_ptr<CCImageDerivativeFilter> pDV,
+        std::shared_ptr<CCShapeDetector> pSD) :
+        pCV_(pCV), pDV_(pDV), pSD_(pSD) {}
+
    CCImageProcessor(const CCImageProcessor &proc) :
-        pCV_(proc.pCV_), pDV_(proc.pDV_) {}
+        pCV_(proc.pCV_), pDV_(proc.pDV_), pSD_(proc.pSD_) {}
 
    virtual ~CCImageProcessor() {}
 
    virtual void Run(CCImageReader &img) {
-       pCV_->Run(img);
-       pDV_->Run(img);
+       if (pCV_)
+            pCV_->Run(img);
+       if (pDV_)
+            pDV_->Run(img);
+       if (pSD_)
+           pSD_->Run(img);
    }
 
    private:
@@ -66,6 +77,8 @@ class CCImageProcessor {
    std::shared_ptr<CCImageConvolutionFilter> pCV_;
 
    std::shared_ptr<CCImageDerivativeFilter> pDV_;
+
+   std::shared_ptr<CCShapeDetector> pSD_;
 };
 
 //
@@ -84,7 +97,7 @@ class CCImageProcessorBuilder {
     virtual ~CCImageProcessorBuilder() {}
 
     virtual CCImageProcessor build() {
-        return CCImageProcessor(pCV_, pDV_);
+        return CCImageProcessor(pCV_, pDV_, pSD_);
     }
 
     virtual CCImageProcessorBuilder&
@@ -99,11 +112,19 @@ class CCImageProcessorBuilder {
             return *this;
     }
 
+    virtual CCImageProcessorBuilder&
+        addShapeDetector(int distance) {
+            pSD_.reset(new CCShapeDetector(distance));
+            return *this;
+    }
+
     private:
 
     std::shared_ptr<CCImageConvolutionFilter> pCV_;
 
     std::shared_ptr<CCImageDerivativeFilter> pDV_;
+
+    std::shared_ptr<CCShapeDetector> pSD_;
 };
 
 #endif

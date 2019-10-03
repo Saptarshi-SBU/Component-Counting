@@ -96,7 +96,7 @@ int dataset_dir_load_test(void) {
     return 0;
 }
 
-int image_processor_test(void) {
+int image_processor_test001(void) {
     CCImageProcessor imProcessor;
     CCImageProcessorBuilder imBuilder;
     CCImageReader imReal(TEST_IMAGE_PNG, CCImageSourceType::PNG, CCColorChannels::RGB), imGray;
@@ -117,12 +117,35 @@ int image_processor_test(void) {
     return 0;
 }
 
+int image_processor_test002(void) {
+    CCImageProcessor imProcessor;
+    CCImageProcessorBuilder imBuilder;
+    CCImageReader imReal(TEST_IMAGE_PNG, CCImageSourceType::PNG, CCColorChannels::RGB), imGray;
+    bool ok;
+
+    assert(imReal.Load());
+    imGray = imReal.ConvertRGB2GRAY(ok);
+    assert(ok);
+
+    imProcessor = imBuilder.addGaussianFilter(5, 5, 2.0)
+                           .addSoebelFilter(3, 3, 1)
+                           .addShapeDetector(100)
+                           .build();
+    imProcessor.Run(imGray);
+    assert(imGray.Save());
+    assert(imGray.Destroy());
+    assert(imReal.Destroy());
+    std::cout << __func__ << ":" <<  "pass" << std::endl;
+    return 0;
+}
+
 int main(void) {
     uuid_dup_test();
     img_load_test();
     img_convert_RGB2GRAY_test();
     dataset_file_load_test();
     dataset_dir_load_test();
-    image_processor_test();
+    image_processor_test001();
+    image_processor_test002();
     return 0;
 }
