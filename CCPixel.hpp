@@ -37,14 +37,6 @@ static unsigned long convertULong(T x) {
 }
 
 template<class T>
-static unsigned long hash_value(const Pixel<T> &pixel) {
-        if (pixel.getDimensions() == 2)
-                return convertULong<T>(pixel._x) + 157 * convertULong<T>(pixel._y);
-        else
-                return convertULong<T>(pixel._x);
-}
-
-template<class T>
 struct Pixel {
 
         T _x;
@@ -83,19 +75,27 @@ struct Pixel {
         }
 
         friend bool operator==(const Pixel<T> &pixel_a, const Pixel<T> &pixel_b) {
-               return hash_value<T>(pixel_a) == hash_value<T>(pixel_b);
+                return ((pixel_a.getX() == pixel_b.getX()) &&
+                    pixel_a.getY() == pixel_b.getY());
         }
 
         friend bool operator!=(const Pixel<T> &pixel_a, const Pixel<T> &pixel_b) {
-               return hash_value<T>(pixel_a) != hash_value<T>(pixel_b);
+                return ((pixel_a.getX() != pixel_b.getX()) ||
+                    pixel_a.getY() != pixel_b.getY());
         }
 
         friend bool operator<(const Pixel<T> &pixel_a, const Pixel<T> &pixel_b) {
-               return hash_value<T>(pixel_a) < hash_value<T>(pixel_b);
+                if (pixel_a.getX() == pixel_b.getX())
+                    return pixel_a.getY() < pixel_b.getY();
+                else
+                    return pixel_a.getX() < pixel_b.getX();
         }
 
         friend bool operator>(const Pixel<T> &pixel_a, const Pixel<T> &pixel_b) {
-               return hash_value<T>(pixel_a) > hash_value<T>(pixel_b);
+                if (pixel_a.getX() == pixel_b.getX())
+                    return pixel_a.getY() > pixel_b.getY();
+                else
+                    return pixel_a.getX() > pixel_b.getX();
         }
 
         T getX(void) const noexcept {
@@ -116,13 +116,6 @@ struct Pixel {
 
         bool valid(void) const noexcept {
                 return (_x >= 0) && (_y >= 0);
-        }
-
-        int getDimensions(void) const {
-                if (_y == 0)
-                        return 1;
-                else
-                        return 2;
         }
 };
 

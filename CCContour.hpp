@@ -45,11 +45,18 @@ struct Contour {
 
     ContourType _type;
 
-    std::set<Pixel<T>> boundaryPixels;
+    std::list<Pixel<T>> boundaryPixels;
 
     std::list<Pixel<T>> boundaryPixelsApprox;
 
     Contour() {}
+
+    Contour(const Contour<T> &contour) {
+        _start = contour._start;
+        _type  = contour._type;
+        boundaryPixels = contour.boundaryPixels;
+        boundaryPixelsApprox = contour.boundaryPixelsApprox;
+    }
 
     Contour(const Pixel<T>& pixel, ContourType type) : _start(pixel), _type(type) {}
 
@@ -64,12 +71,11 @@ struct Contour {
     }
 
     void AddBoundaryPixel(const Pixel<T> &pixel) {
-        auto pair = boundaryPixels.insert(pixel);
-        assert(pair.second);
+        boundaryPixels.push_back(pixel);
     }
 
     bool FindPixel(const Pixel<T> &pixel) const noexcept {
-        return (boundaryPixels.find(pixel) != boundaryPixels.end());
+        return (std::find(boundaryPixels.begin(), boundaryPixels.end(), pixel) != boundaryPixels.end());
     }
 
     bool empty(void) const noexcept {
@@ -105,6 +111,8 @@ struct Contour {
 
     void drawContourApprox2(unsigned char *Img, int ImgWidth, int ImgHeight) {
         std::vector<Pixel<float>> pixelVec;
+
+        assert(boundaryPixelsApprox.size());
 
         for (auto &p : boundaryPixelsApprox) {
             pixelVec.push_back(Pixel<float>(p.getX(), p.getY()));

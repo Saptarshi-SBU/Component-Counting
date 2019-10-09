@@ -72,20 +72,30 @@ class CCSoebelFilter : public CCImageDerivativeFilter {
                 int a11 = -1, a12 = -1, a13 = -1;
                 int a21 = -1, a22 = -1, a23 = -1;
                 int a31 = -1, a32 = -1, a33 = -1;
+
+                int boundary = 0;
         
                 // y - boundary cases
-                if (y - 1 < 0)
+                if (y - 1 < 0) {
                     a11 = a12 = a13 = 0;
+                    boundary = 1;
+                }
 
-                if (y + 1 >= height)
+                if (y + 1 >= height) {
                     a31 = a32 = a33 = 0;
+                    boundary = 1;
+                }
 
                 // x - boundary cases
-                if (x - 1 < 0)
+                if (x - 1 < 0) {
                     a11 = a21 = a31 = 0;
+                    boundary = 1;
+                }
 
-                if (x + 1 >= width)
+                if (x + 1 >= width) {
                     a13 = a23 = a33 = 0;
+                    boundary = 1;
+                }
 
                 if (a11 < 0)
                     a11 = imgData[(y - 1) * width + x - 1];
@@ -107,7 +117,10 @@ class CCSoebelFilter : public CCImageDerivativeFilter {
                 int gx = a13 - a11 + 2*(a23 - a21) + a33 - a31;
                 int gy = a31 - a11 + 2*(a32 - a12) + a33 - a13;
 
-                a22 = sqrtf(gx*gx + gy*gy);
+                if (boundary)
+                    a22 = 0;
+                else
+                    a22 = sqrtf(gx*gx + gy*gy);
 
                 imgDst[y * width + x] = a22;
                 //dbg_printf("(%d, %d) :%d %d \n", y, x, gx, gy);

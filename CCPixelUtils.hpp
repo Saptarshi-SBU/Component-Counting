@@ -78,6 +78,37 @@ struct PixelDirection {
         return dir;
     }
 
+    std::string printDirection(void) const noexcept {
+        switch (dir) {
+        case NORTH:
+            return std::string("NORTH");
+            break;
+        case NORTH_EAST:
+            return std::string("NORTH_EAST");
+            break;
+        case EAST:
+            return std::string("EAST");
+            break;
+        case SOUTH_EAST:
+            return std::string("SOUTH_EAST");
+            break;
+        case SOUTH:
+            return std::string("SOUTH");
+            break;
+        case SOUTH_WEST:
+            return std::string("SOUTH_WEST");
+            break;
+        case WEST:
+            return std::string("WEST");
+            break;
+        case NORTH_WEST:
+            return std::string("NORTH_WEST");
+            break;
+        default:
+            assert(0);
+        }
+    }
+
     void resetDirection(void) noexcept {
         dir = NORTH_WEST;
     }

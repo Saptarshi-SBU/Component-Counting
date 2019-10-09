@@ -90,7 +90,7 @@ float FindPixelwithMaxDistance(const std::list<Pixel<T>> &list,
         if (height > maxDist) {
             maxDist = height;
             vertexPixel = p;
-            dbg_printf("curr max area :%f (%d, %d)\n", area, p.getX(), p.getY());
+            dbg_printf("curr max area :%f (%d, %d), %f\n", area, p.getX(), p.getY(), height);
         }
     }
 

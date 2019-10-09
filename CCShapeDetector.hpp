@@ -26,12 +26,13 @@
 #include <string.h>
 
 #include <list>
+#include <cassert>
 #include "CCPixel.hpp"
 #include "CCPixelUtils.hpp"
-#include "CCContour.hpp"
-#include "CCContourFinding.hpp"
-#include "CCPolygonApproximation.hpp"
 #include "CCImageReader.hpp"
+#include "CCContour.hpp"
+#include "CCContourTracing.hpp"
+#include "CCPolygonApproximation.hpp"
 
 class CCShapeDetector {
 
@@ -44,7 +45,7 @@ class CCShapeDetector {
     virtual ~CCShapeDetector() {}
 
     template<class T>
-    int countVertices(const Contour<T> contour) {
+    int countVertices(Contour<T> &contour) {
         int num;
         std::list<Pixel<T>> polyPoints, boundaryPixelsApprox;
 
@@ -58,6 +59,9 @@ class CCShapeDetector {
         boundaryPixelsApprox.push_back(*polyPoints.begin());
         boundaryPixelsApprox.push_back(*polyPoints.rbegin());
         printf("num=%d, vertices=%lu\n", num, boundaryPixelsApprox.size());
+        contour.boundaryPixelsApprox = boundaryPixelsApprox;
+        if (!contour.empty())
+            assert(contour.boundaryPixelsApprox.size());
         return num;
     }
 
@@ -72,22 +76,39 @@ class CCShapeDetector {
         numChannels = img.getNumChannels();
 
         byte *dst = new byte[height * width * numChannels];
-        assert(dst);
+        memset(dst, 0, sizeof(byte) * width * height * numChannels);
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                Pixel<int> pixel(i, j);
+                Contour<int> contour =
+                    BorderFollowingStrategy<int>(src, pixel, height, width, dst, contours_list);
+                if (contour.empty())
+                    continue;
+                contours_list.push_back(contour);
+                contour.drawContour(dst, width, height);
+                //countVertices<int>(contour);
+                //contour.drawContourApprox2(dst, width, height);
+            }
+        }
+        memcpy(src, dst, sizeof(byte) * width * height * numChannels);
+        delete dst;
+    }
+
+    void GetAllPixels(CCImageReader &img) {
+        byte *src;
+        int height, width;
+
+        src    = img.getDataBlob();
+        height = img.getHeight();
+        width  = img.getWidth();
+
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
                 Pixel<int> pixel(j, i);
-                Contour<int> contour =
-                    MooreNeighbourhoodStrategy<int>(src, pixel, height, width, dst, contours_list);
-
-                if (contour.empty())
-                    continue;
-
-                contours_list.push_back(contour);
-                if (countVertices<int>(contour) == 1)
-                    contour.drawContourApprox2(dst, width, height);
+                int index = i * width + j;
+                if ((byte) src[index])
+                    printf("img %d %d\n", j, i);
             }
-            memcpy(src, dst, sizeof(byte) * width * height * numChannels);
-            delete dst;
         }
     }
 

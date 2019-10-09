@@ -35,7 +35,13 @@
 
 #define TEST_IMAGE_DIR "images/shapes/triangles/"
 
-#define TEST_IMAGE_PNG "images/shapes/triangles/drawing(4).png"
+//#define TEST_IMAGE_PNG "images/shapes/triangles/drawing(4).png"
+
+//#define TEST_IMAGE_PNG "download.png"
+//
+//#define TEST_IMAGE_PNG "download2.png"
+
+#define TEST_IMAGE_PNG "download3.png"
 
 int uuid_dup_test(void) {
     std::set<std::string> uuid_strings;
@@ -129,7 +135,7 @@ int image_processor_test002(void) {
 
     imProcessor = imBuilder.addGaussianFilter(5, 5, 2.0)
                            .addSoebelFilter(3, 3, 1)
-                           .addShapeDetector(100)
+                           .addShapeDetector(170)
                            .build();
     imProcessor.Run(imGray);
     assert(imGray.Save());
