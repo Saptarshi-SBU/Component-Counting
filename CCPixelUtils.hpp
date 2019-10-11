@@ -39,7 +39,6 @@ bool IsPixelValid(Pixel<T> &pixel, int width, int height) {
     return (pixel.valid() && (pixel.getX() < width) && (pixel.getY() < height));
 }
 
-
 struct PixelDirection {
 
     static const int MAX_NEIGHBOURHOOD = 8;

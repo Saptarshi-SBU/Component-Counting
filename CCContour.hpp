@@ -27,6 +27,8 @@
 #include <list>
 
 #include "CCPixel.hpp"
+#include "CCConvexHull.hpp"
+#include "CCPolygonApproximation.hpp"
 #include "CCImageReader.hpp"
 
 typedef unsigned char byte;
@@ -75,7 +77,8 @@ struct Contour {
     }
 
     bool FindPixel(const Pixel<T> &pixel) const noexcept {
-        return (std::find(boundaryPixels.begin(), boundaryPixels.end(), pixel) != boundaryPixels.end());
+        return (std::find(boundaryPixels.begin(), boundaryPixels.end(), pixel)
+            != boundaryPixels.end());
     }
 
     bool empty(void) const noexcept {
@@ -84,6 +87,25 @@ struct Contour {
 
     const size_t getSize(void) const noexcept {
         return boundaryPixels.size();
+    }
+
+    const size_t getLength(void) const noexcept {
+        size_t sum = 0;
+        std::stack<Pixel<T>> sp;
+        for (auto &p : boundaryPixels)
+            sp.push(p);
+
+        Pixel<T> p1(sp.top());
+        sp.pop();
+
+        while (!sp.empty()) {
+            Pixel<T> p2(sp.top());
+            sp.pop();
+
+            sum += sqrt(std::pow(p2.getX() - p1.getX(), 2) +
+                        std::pow(p2.getY() - p1.getY(), 2));
+        }
+        return sum;
     }
 
     void ResetContour(void) {
@@ -98,6 +120,44 @@ struct Contour {
             index = pixel.getY() * ImgWidth + pixel.getX();
             Img[index] = 255;
         }
+    }
+
+    void makeConvexHull(void) {
+        for (auto &p : boundaryPixels) 
+            std::cout << "D2 " << p.getX() << " " << p.getY() << std::endl;
+        boundaryPixels = MakeConvexHull<T>(boundaryPixels);
+        for (auto &p : boundaryPixels) 
+            std::cout << "D1 " << p.getX() << " " << p.getY() << std::endl;
+    }
+
+    void ApproxPoly(int distance) {
+        size_t size = getLength();
+        std::cout << "arc size :" << size << " " << 0.01 * size << std::endl;
+        std::list<Pixel<int>> polyPointsApprox, polyPoints;
+
+        polyPointsApprox.push_back(*boundaryPixels.begin());
+
+        approxPolyDP(boundaryPixels,
+                    *boundaryPixels.begin(),
+                    *boundaryPixels.rbegin(),
+                     polyPointsApprox,
+                     distance);
+
+        polyPointsApprox.push_back(*boundaryPixels.rbegin());
+
+        for (auto &p : boundaryPixels) {
+            if (std::find(polyPointsApprox.begin(), polyPointsApprox.end(), p)
+                    != polyPointsApprox.end()) {
+                polyPoints.push_back(p);
+            }
+        }
+
+        std::cout << "polypoints :" << polyPoints.size() << std::endl;
+        MergePoints<int>(polyPoints, 10);
+        MergePoints<int>(polyPoints, 10);
+        boundaryPixels = polyPoints;
+        for (auto &p : boundaryPixels) 
+            std::cout << "D3 " << p.getX() << " " << p.getY() << std::endl;
     }
 
     void drawContourApprox(unsigned char *Img, int ImgWidth, int ImgHeight) {

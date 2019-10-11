@@ -70,6 +70,7 @@ class CCImageProcessor {
             pDV_->Run(img);
        if (pSD_)
            pSD_->Run(img);
+           //pSD_->GetAllPixels(img);
    }
 
    private:

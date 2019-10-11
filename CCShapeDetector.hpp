@@ -32,7 +32,6 @@
 #include "CCImageReader.hpp"
 #include "CCContour.hpp"
 #include "CCContourTracing.hpp"
-#include "CCPolygonApproximation.hpp"
 
 class CCShapeDetector {
 
@@ -43,27 +42,6 @@ class CCShapeDetector {
     CCShapeDetector(int dist_threshold) : dist_threshold_(dist_threshold) {}
 
     virtual ~CCShapeDetector() {}
-
-    template<class T>
-    int countVertices(Contour<T> &contour) {
-        int num;
-        std::list<Pixel<T>> polyPoints, boundaryPixelsApprox;
-
-        for (auto &p : contour.boundaryPixels)
-            polyPoints.push_back(p);
-        polyPoints.sort(ComparatorLesserPixel<T>());
-
-        boundaryPixelsApprox.clear();
-        num = approxPolyDP<T>(polyPoints, *polyPoints.begin(),
-                *polyPoints.rbegin(), boundaryPixelsApprox, dist_threshold_);
-        boundaryPixelsApprox.push_back(*polyPoints.begin());
-        boundaryPixelsApprox.push_back(*polyPoints.rbegin());
-        printf("num=%d, vertices=%lu\n", num, boundaryPixelsApprox.size());
-        contour.boundaryPixelsApprox = boundaryPixelsApprox;
-        if (!contour.empty())
-            assert(contour.boundaryPixelsApprox.size());
-        return num;
-    }
 
     void Run(CCImageReader &img) {
         byte *src;
@@ -85,9 +63,9 @@ class CCShapeDetector {
                 if (contour.empty())
                     continue;
                 contours_list.push_back(contour);
+                contour.makeConvexHull();
+                contour.ApproxPoly(dist_threshold_);
                 contour.drawContour(dst, width, height);
-                //countVertices<int>(contour);
-                //contour.drawContourApprox2(dst, width, height);
             }
         }
         memcpy(src, dst, sizeof(byte) * width * height * numChannels);

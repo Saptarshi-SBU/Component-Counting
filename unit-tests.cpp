@@ -23,6 +23,7 @@
  */
 
 #include <set>
+#include <stack>
 #include <cassert>
 #include <iostream>
 
@@ -30,6 +31,8 @@
 #include "CCDataSet.hpp"
 #include "CCImageReader.hpp"
 #include "CCImageProcessor.hpp"
+#include "CCDominatingPoints.hpp"
+#include "CCConvexHull.hpp"
 
 #define MAX_UUIDS 100UL
 
@@ -41,7 +44,9 @@
 //
 //#define TEST_IMAGE_PNG "download2.png"
 
-#define TEST_IMAGE_PNG "download3.png"
+//#define TEST_IMAGE_PNG "download3.png"
+//
+#define TEST_IMAGE_PNG "download4.png"
 
 int uuid_dup_test(void) {
     std::set<std::string> uuid_strings;
@@ -135,13 +140,72 @@ int image_processor_test002(void) {
 
     imProcessor = imBuilder.addGaussianFilter(5, 5, 2.0)
                            .addSoebelFilter(3, 3, 1)
-                           .addShapeDetector(170)
+                           .addShapeDetector(5)
                            .build();
     imProcessor.Run(imGray);
     assert(imGray.Save());
     assert(imGray.Destroy());
     assert(imReal.Destroy());
     std::cout << __func__ << ":" <<  "pass" << std::endl;
+    return 0;
+}
+
+int image_processor_test003(void) {
+    Prng<int> prng;
+    std::list<Pixel<int>> pixels;
+    std::list<Pixel<int>> upperhull;
+    std::list<Pixel<int>> lowerhull;
+    std::list<Pixel<int>> convexhull;
+    std::list<Pixel<int>> polyPointsApprox, polyPoints;
+
+    for (int i = 0; i < 100; i++) {
+        Pixel<int> p(prng.next_random() % 50,
+                     prng.next_random() % 50);
+        pixels.push_back(p);
+    }
+
+    MakeConvexHullUpper(pixels, upperhull);
+    MakeConvexHullLower(pixels, lowerhull);
+
+    lowerhull.reverse();
+    lowerhull.pop_front();
+    lowerhull.pop_back();
+
+    convexhull.splice(convexhull.begin(), upperhull);
+    convexhull.splice(convexhull.end(), lowerhull);
+    for (auto &p : convexhull) {
+        std::cout << "HULL " << p.getX() << " " << p.getY() << std::endl;
+    } 
+
+    //CalculateConvexHullGradient<int>(convexhull);
+    //
+    polyPointsApprox.push_back(*convexhull.begin());
+    polyPointsApprox.push_back(*convexhull.rbegin());
+
+    approxPolyDP(convexhull,
+                *convexhull.begin(),
+                *convexhull.rbegin(),
+                 polyPointsApprox,
+                 15);
+
+    for (auto &p : convexhull) {
+        if (std::find(polyPointsApprox.begin(), polyPointsApprox.end(), p)
+                != polyPointsApprox.end()) {
+            polyPoints.push_back(p);
+            std::cout << "APPROX " << p.getX() << " " << p.getY() << std::endl;
+        }
+    }
+
+    std::cout << "size1 :" << polyPoints.size() << std::endl;
+    MergePoints<int>(polyPoints, 15);
+
+    std::cout << "size2 :" << polyPoints.size() << std::endl;
+    MergePoints<int>(polyPoints, 15);
+
+    std::cout << "size3 :" << polyPoints.size() << std::endl;
+    for (auto &p : polyPoints) {
+        std::cout << "POLY " << p.getX() << " " << p.getY() << std::endl;
+    } 
     return 0;
 }
 
@@ -153,5 +217,6 @@ int main(void) {
     dataset_dir_load_test();
     image_processor_test001();
     image_processor_test002();
+    image_processor_test003();
     return 0;
 }
