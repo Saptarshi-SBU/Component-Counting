@@ -124,15 +124,16 @@ struct Contour {
 
     void makeConvexHull(void) {
         for (auto &p : boundaryPixels) 
-            std::cout << "D2 " << p.getX() << " " << p.getY() << std::endl;
+            CC_INFO("BorderPixels", p.getX(), p.getY());
+
         boundaryPixels = MakeConvexHull<T>(boundaryPixels);
         for (auto &p : boundaryPixels) 
-            std::cout << "D1 " << p.getX() << " " << p.getY() << std::endl;
+            CC_INFO("HullPixels", p.getX(), p.getY());
     }
 
     void ApproxPoly(int distance) {
         size_t size = getLength();
-        std::cout << "arc size :" << size << " " << 0.01 * size << std::endl;
+        CC_INFO("contour perimeter", size, 0.01 * size);
         std::list<Pixel<int>> polyPointsApprox, polyPoints;
 
         polyPointsApprox.push_back(*boundaryPixels.begin());
@@ -152,12 +153,12 @@ struct Contour {
             }
         }
 
-        std::cout << "polypoints :" << polyPoints.size() << std::endl;
+        CC_INFO("polypoints (split-phase) :", polyPoints.size());
         MergePoints<int>(polyPoints, 10);
         MergePoints<int>(polyPoints, 10);
         boundaryPixels = polyPoints;
         for (auto &p : boundaryPixels) 
-            std::cout << "D3 " << p.getX() << " " << p.getY() << std::endl;
+            CC_INFO("MergedBorderPixels", p.getX(), p.getY());
     }
 
     void drawContourApprox(unsigned char *Img, int ImgWidth, int ImgHeight) {

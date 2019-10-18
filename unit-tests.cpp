@@ -24,10 +24,12 @@
 
 #include <set>
 #include <stack>
+#include <mutex>
 #include <cassert>
 #include <iostream>
 
 #include "CCUUid.hpp"
+#include "CCLogger.hpp"
 #include "CCDataSet.hpp"
 #include "CCImageReader.hpp"
 #include "CCImageProcessor.hpp"
@@ -46,7 +48,19 @@
 
 //#define TEST_IMAGE_PNG "download3.png"
 //
-#define TEST_IMAGE_PNG "download4.png"
+#define TEST_IMAGE_PNG "images/download4.png"
+
+// Logger
+std::mutex CCLog::nanny_;
+//
+std::ofstream* CCLog::ostreamp_ = nullptr;
+//
+std::string CCLog::filename_;
+//
+CC_LOGLEVEL CCLog::level_ = CC_LOG_DEBUG;
+//
+bool CCConsoleLog::canLog = false;
+//
 
 int uuid_dup_test(void) {
     std::set<std::string> uuid_strings;
@@ -206,17 +220,23 @@ int image_processor_test003(void) {
     for (auto &p : polyPoints) {
         std::cout << "POLY " << p.getX() << " " << p.getY() << std::endl;
     } 
+
+    DominatingPoints<int>(polyPoints, 0, 1000, 180);
     return 0;
 }
 
 int main(void) {
+    CCLog::Initialize(CC_LOGFILE);
+    CCLog::SetLogLevel(CC_LOG_DEBUG);
+#if 0
     uuid_dup_test();
     img_load_test();
     img_convert_RGB2GRAY_test();
     dataset_file_load_test();
     dataset_dir_load_test();
     image_processor_test001();
+#endif
     image_processor_test002();
-    image_processor_test003();
+    //image_processor_test003();
     return 0;
 }

@@ -84,13 +84,12 @@ void MakeConvexHullUpper(std::list<Pixel<T>> pixels,
         }
     }
 
-    //std::cout << "stack size : " << sp.size() << std::endl;
-
+    CC_DEBUG("upper hull size :", sp.size());
     while (sp.size()) {
         Pixel<int> p(sp.top());
         upperhull.push_back(p);
         sp.pop();
-        //std::cout << "HULL1 " << p.getX() << " " << p.getY() << std::endl;
+        CC_DEBUG("UPPERHULL", p.getX(), p.getY());
     }
 }
 
@@ -138,13 +137,12 @@ void MakeConvexHullLower(std::list<Pixel<T>> pixels,
         }
     }
 
-    //std::cout << "stack size : " << sp.size() << std::endl;
-
+    CC_DEBUG("lower hull size :", sp.size());
     while (sp.size()) {
         Pixel<int> p(sp.top());
         lowerhull.push_back(p);
         sp.pop();
-        //std::cout << "HULL2 " << p.getX() << " " << p.getY() << std::endl;
+        CC_DEBUG("LOWERHULL", p.getX(), p.getY());
     }
 }
 
@@ -163,9 +161,9 @@ std::list<Pixel<T>> MakeConvexHull(std::list<Pixel<T>> pixels) {
     }
     convexhull.splice(convexhull.end(), lowerhull);
 
-    //std::cout << "size : " << convexhull.size() << std::endl;
-    //for (auto &p : convexhull)
-    //    std::cout << "convex hull " << p.getX() << ":" << p.getY() << std::endl;
+    CC_DEBUG("hull size:", convexhull.size());
+    for (auto &p : convexhull)
+        CC_DEBUG("CONVEXHULL", p.getX(), p.getY());
     return convexhull;
 }
 
@@ -191,7 +189,7 @@ void CalculateConvexHullGradient(std::list<Pixel<T>> pixels) {
         Pixel<int> p1(sp.top());
         sp.pop();
 
-        //std::cout << "orientation : " << PixelOrientation(p1, p2, p3) << std::endl;
+        CC_DEBUG("orientation :",PixelOrientation(p1, p2, p3));
         sp.push(p2);
         sp.push(p3);
     }

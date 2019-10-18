@@ -28,14 +28,11 @@
 #include <vector>
 #include <algorithm>
 #include "CCPixel.hpp"
+#include "CCLogger.hpp"
 
 #define dbg_printf(...)
 
 //#define dbg_printf printf
-
-#define PIXEL_TRACE2(s, a, b, c) \
-    dbg_printf("Pixel Trace %s, p1:(%d, %d) p2:(%d, %d) p3:(%d, %d)\n", \
-            s, (a).getX(), (a).getY(), (b).getX(), (b).getY(), (c).getX(), (c).getY())
 
 template<class T>
 static int DominatingPoints(std::list<Pixel<T>> &polyPoints,
@@ -69,8 +66,8 @@ static int DominatingPoints(std::list<Pixel<T>> &polyPoints,
 
     for (int i = 0; i < nr; i++) {
         for (int j = 0; j < nr; j++)
-            printf ("%f ", distMat[i][j]);
-        printf("\n");
+            dbg_printf ("%f ", distMat[i][j]);
+        dbg_printf("\n");
     }
 
     // 1st pass
@@ -84,7 +81,7 @@ static int DominatingPoints(std::list<Pixel<T>> &polyPoints,
                 continue;
 
             d1 = distMat[i][j];
-            std::cout << "d1 :" << d1 << ":" << dMin << ":" << dMax << std::endl;
+            CC_DEBUG("d1 :", d1, ":", dMin, ":", dMax);
             if (((d1 < dMin) || (d1 > dMax)))
                 continue;
 
@@ -96,7 +93,7 @@ static int DominatingPoints(std::list<Pixel<T>> &polyPoints,
                     continue;
 
                 d2 = distMat[i][k];
-                std::cout << "d2 :" << d2 << ":" << dMin << ":" << dMax << std::endl;
+                CC_DEBUG("d2 :", d2, ":", dMin, ":", dMax);
                 if (((d2 < dMin) || (d2 > dMax)))
                     continue;
 
@@ -121,7 +118,7 @@ static int DominatingPoints(std::list<Pixel<T>> &polyPoints,
         int i = c.first;
         float alpha = candidates[i];
 
-        std::cout << "alpha :" << alpha << ": " << alphaMax << std::endl;
+        CC_DEBUG("alpha :", alpha, ":", alphaMax);
         
         for (int j = 0; j < distMat[i].size(); j++) {
             float d;
@@ -148,8 +145,7 @@ static int DominatingPoints(std::list<Pixel<T>> &polyPoints,
             dominatingPoints.push_back(points[c.first]);
     }
 
-    std::cout << "dominating points :" << dominatingPoints.size()
-              << std::endl;
+    CC_DEBUG("dominating points :", dominatingPoints.size());
     return 0;
 }
 #endif

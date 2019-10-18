@@ -27,9 +27,9 @@
 #include <algorithm>
 #include "CCPixel.hpp"
 
-//#define dbg_printf(...)
+#define dbg_printf(...)
 
-#define dbg_printf printf
+//#define dbg_printf printf
 
 #define PIXEL_TRACE2(s, a, b, c) \
     dbg_printf("Pixel Trace %s, p1:(%d, %d) p2:(%d, %d) p3:(%d, %d)\n", \
@@ -144,7 +144,7 @@ static int MergePoints(std::list<Pixel<T>> &polyPoints, float distance) {
         goto exit_approx;
 
     for (auto &p : polyPoints) {
-        std::cout << "DATAPOINTS " << p.getX() << " " << p.getY() << std::endl;
+        CC_INFO("SPLITDATAPOINTS", p.getX(), p.getY());
         sp.push(p);
     }
 
@@ -170,13 +170,10 @@ static int MergePoints(std::list<Pixel<T>> &polyPoints, float distance) {
             sp.push(p1);
             sp.push(p3);
             removePixels.push_back(p2);
-            //std::cout << "sp size " << sp.size() << std::endl;
             continue;
         }
         sp.push(p1);
         sp.push(p2);
-        //std::cout << "distance : " << dMax << std::endl;
-        //std::cout << "sp size " << sp.size() << std::endl;
     }
 
     if (sp.size() == 2) {
@@ -197,7 +194,6 @@ static int MergePoints(std::list<Pixel<T>> &polyPoints, float distance) {
         if (dMax < distance) {
             removePixels.push_back(p2);
         }
-        //std::cout << "sp size(last) " << sp.size() << std::endl;
     }
 
     for (auto &p : polyPoints) {
@@ -205,7 +201,6 @@ static int MergePoints(std::list<Pixel<T>> &polyPoints, float distance) {
             tmpPixels.push_back(p);
     }
 
-    //std::cout << "tmp size : " << tmpPixels.size() << std::endl;
     polyPoints = tmpPixels;
 
 exit_approx:

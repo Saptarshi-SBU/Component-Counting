@@ -46,7 +46,6 @@ class CCShapeDetector {
     void Run(CCImageReader &img) {
         byte *src;
         int height, width, numChannels;
-        std::list<Contour<int>> contours_list;
 
         src    = img.getDataBlob();
         height = img.getHeight();
@@ -62,12 +61,18 @@ class CCShapeDetector {
                     BorderFollowingStrategy<int>(src, pixel, height, width, dst, contours_list);
                 if (contour.empty())
                     continue;
-                contours_list.push_back(contour);
                 contour.makeConvexHull();
                 contour.ApproxPoly(dist_threshold_);
                 contour.drawContour(dst, width, height);
+                contours_list.push_back(contour);
             }
         }
+
+        for (auto &c : contours_list) {
+           if (c.getSize() > 2)
+              std::cout << "num vertices :" << c.getSize() << std::endl;
+	    }
+
         memcpy(src, dst, sizeof(byte) * width * height * numChannels);
         delete dst;
     }
@@ -93,5 +98,8 @@ class CCShapeDetector {
     private:
 
     int dist_threshold_;
+
+    std::list<Contour<int>> contours_list;
+
 };
 #endif
