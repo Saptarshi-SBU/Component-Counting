@@ -88,7 +88,13 @@ bool CCDataSet::LoadDirectory(void) {
                 }
                 // prevent object slicing
                 dataItems_.push_back(dynamic_cast<CCDataObject *>(imp));
+                std::cerr << "new image :" << imp->getFilename() << std::endl;
             }
+        }
+
+        for (auto &i : dataItems_) {
+            CCImageReader *im = dynamic_cast<CCImageReader*>(i);
+            std::cout << "processing image :" << im << ":" << im->getFilename() << std::endl;
         }
         break;
     }

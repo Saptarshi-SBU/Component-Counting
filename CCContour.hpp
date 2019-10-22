@@ -26,6 +26,7 @@
 #include <set>
 #include <list>
 
+#include "CCUUid.hpp"
 #include "CCPixel.hpp"
 #include "CCConvexHull.hpp"
 #include "CCPolygonApproximation.hpp"
@@ -43,24 +44,25 @@ struct Contour {
         OUTER,
     };
 
+    CCUUid _uuid;
+
     Pixel<T> _start;
 
     ContourType _type;
 
     std::list<Pixel<T>> boundaryPixels;
 
-    std::list<Pixel<T>> boundaryPixelsApprox;
-
-    Contour() {}
+    Contour() : _uuid() {}
 
     Contour(const Contour<T> &contour) {
+        _uuid  = CCUUid();
         _start = contour._start;
         _type  = contour._type;
         boundaryPixels = contour.boundaryPixels;
-        boundaryPixelsApprox = contour.boundaryPixelsApprox;
     }
 
-    Contour(const Pixel<T>& pixel, ContourType type) : _start(pixel), _type(type) {}
+    Contour(const Pixel<T>& pixel, ContourType type) :
+        _uuid(), _start(pixel), _type(type) {}
 
     ~Contour() {}
 
@@ -83,6 +85,10 @@ struct Contour {
 
     bool empty(void) const noexcept {
         return boundaryPixels.empty();
+    }
+
+    std::string getUUId(void) {
+        return _uuid.getString();
     }
 
     const size_t getSize(void) const noexcept {
@@ -110,16 +116,6 @@ struct Contour {
 
     void ResetContour(void) {
         boundaryPixels.clear();
-        boundaryPixelsApprox.clear();
-    }
-
-    void drawContour(unsigned char *Img, int ImgWidth, int ImgHeight) {
-        for (auto &p : boundaryPixels) {
-            int index;
-            Pixel<T> pixel(p);
-            index = pixel.getY() * ImgWidth + pixel.getX();
-            Img[index] = 255;
-        }
     }
 
     void makeConvexHull(void) {
@@ -161,8 +157,8 @@ struct Contour {
             CC_INFO("MergedBorderPixels", p.getX(), p.getY());
     }
 
-    void drawContourApprox(unsigned char *Img, int ImgWidth, int ImgHeight) {
-        for (auto &p : boundaryPixelsApprox) {
+    void drawContour(unsigned char *Img, int ImgWidth, int ImgHeight) {
+        for (auto &p : boundaryPixels) {
             int index;
             Pixel<T> pixel(p);
             index = pixel.getY() * ImgWidth + pixel.getX();
@@ -170,32 +166,34 @@ struct Contour {
         }
     }
 
-    void drawContourApprox2(unsigned char *Img, int ImgWidth, int ImgHeight) {
+    void drawContourApprox(unsigned char *Img, int ImgWidth, int ImgHeight) {
+        int i = 0, p = 0, q = 1, n;
+
+        assert(boundaryPixels.size());
+        // use array indexed container
         std::vector<Pixel<float>> pixelVec;
-
-        assert(boundaryPixelsApprox.size());
-
-        for (auto &p : boundaryPixelsApprox) {
+        for (auto &p : boundaryPixels)
             pixelVec.push_back(Pixel<float>(p.getX(), p.getY()));
-            printf("x=%d, y=%d\n", p.getX(), p.getY());
-        }
 
-        int p = 0, q = 1;
-        int i = 0, count = pixelVec.size();
-        while (i < count) {
-            std::list<Pixel<float>> points;
+        n = pixelVec.size();
+        if (n < 3)
+            return;
+
+        while (i < n) {
+            std::list<Pixel<float>> newPoints;
             Pixel<float> p1(pixelVec.at(p)), p2(pixelVec.at(q));
-            printf("COUNT :%lu, count=%d\n", pixelVec.size(), i);
-            lineGeneration<float>(p1, p2, points);
-            for (auto &p : points) {
+
+            lineGeneration<float>(p1, p2, newPoints);
+
+            for (auto &p : newPoints) {
                 int index;
                 Pixel<float> pixel(p);
                 index = (int)pixel.getY() * ImgWidth + (int)pixel.getX();
                 Img[index] = 255;
             }
-            points.clear();
-            p = (p + 1) % count;
-            q = (q + 1) % count;
+            newPoints.clear();
+            p = (p + 1) % n;
+            q = (q + 1) % n;
             i++;
         }
     }

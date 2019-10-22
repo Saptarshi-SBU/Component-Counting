@@ -135,17 +135,28 @@ static void lineGeneration(Pixel<T> p, Pixel<T> q, std::list<Pixel<T>> &points) 
         if (p > q)
                 std::swap(p, q);
 
-        x = p.getX();
-        y = p.getY();
+        x = p.getX(); y = p.getY();
+
         dx = q.getX() - p.getX(), dy = q.getY() - p.getY(); 
 
-        assert(dx);
-        slope = dy/dx;
+        if (dx)
+            slope = dy/dx;
+        else
+            slope = std::nan("0");
+
         PIXEL_TRACE3("points :", p, q);
 
         points.push_back(p);
         do {
-                if (std::abs(slope) <= 1) {
+                if (std::isnan(slope)) {
+                        y += 1;
+                        if (y >= q.getY())
+                                break;
+                } else if (slope == 0) {
+                        x += 1;
+                        if (x >= q.getX())
+                                break;
+                } else if (std::abs(slope) <= 1) {
                         y += slope;
                         x += 1;
                         dbg_printf("x=%f y=%f\n", x, y);

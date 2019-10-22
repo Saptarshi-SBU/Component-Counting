@@ -77,6 +77,10 @@ void CCImageReader::setFilename(const char *filename) {
     filename_ = filename;
 }
 
+const char * CCImageReader::getFilename(void) {
+    return filename_;
+}
+
 int CCImageReader::getWidth() {
     return width_;
 }

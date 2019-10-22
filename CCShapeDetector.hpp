@@ -68,11 +68,37 @@ class CCShapeDetector {
             }
         }
 
-        for (auto &c : contours_list) {
-           if (c.getSize() > 2)
-              std::cout << "num vertices :" << c.getSize() << std::endl;
-	    }
+        memcpy(src, dst, sizeof(byte) * width * height * numChannels);
+        delete dst;
+    }
 
+    void DetectShapes(CCImageReader &img) {
+        byte *src;
+        int height, width, numChannels;
+
+        src    = img.getDataBlob();
+        height = img.getHeight();
+        width  = img.getWidth();
+        numChannels = img.getNumChannels();
+
+        byte *dst = new byte[height * width * numChannels];
+        memset(dst, 0, sizeof(byte) * width * height * numChannels);
+        for (auto &c : contours_list) {
+           unsigned int nr_vertices = c.getSize();
+           if (nr_vertices <= 2)
+               continue;
+
+           if (nr_vertices == 3) {
+              CC_DEBUG(c.getUUId(), "Triangle");
+           } else {
+              CC_DEBUG(c.getUUId(), "Polygon :", nr_vertices);
+           }
+
+           for (auto &p : c.boundaryPixels)
+              CC_DEBUG("CTOUR Pixel", c.getUUId(), p.getX(), p.getY());
+
+           c.drawContourApprox(dst, width, height);
+	    }
         memcpy(src, dst, sizeof(byte) * width * height * numChannels);
         delete dst;
     }

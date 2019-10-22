@@ -73,6 +73,11 @@ class CCImageProcessor {
            //pSD_->GetAllPixels(img);
    }
 
+   virtual void DetectObjects(CCImageReader &img) {
+       if (pSD_)
+           pSD_->DetectShapes(img);
+   }
+
    private:
 
    std::shared_ptr<CCImageConvolutionFilter> pCV_;

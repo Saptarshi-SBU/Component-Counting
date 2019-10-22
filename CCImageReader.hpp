@@ -95,6 +95,8 @@ class CCImageReader : public CCDataObject {
 
    void setFilename(const char *);
 
+   const char *getFilename(void);
+
    void setWidth(int);
 
    void setHeight(int);

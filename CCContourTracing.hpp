@@ -132,7 +132,7 @@ BorderFollowingStrategy(byte *Img,
     }
 
     if (contour.getSize() > CONTOUR_THRESHOLD_SIZE) {
-        printf("detected contour size: %lu\n", contour.getSize());
+        CC_DEBUG("detected contour size: %lu\n", contour.getSize());
         PIXEL_TRACE("end pixel<start, current, next>",
             start_pixel, curr_pixel, next_pixel);
     } else

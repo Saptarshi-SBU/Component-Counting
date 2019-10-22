@@ -38,7 +38,7 @@
 
 #define MAX_UUIDS 100UL
 
-#define TEST_IMAGE_DIR "images/shapes/triangles/"
+#define TEST_IMAGE_DIR "images/triangles/"
 
 //#define TEST_IMAGE_PNG "images/shapes/triangles/drawing(4).png"
 
@@ -46,10 +46,13 @@
 //
 //#define TEST_IMAGE_PNG "download2.png"
 
-//#define TEST_IMAGE_PNG "download3.png"
+//#define TEST_IMAGE_PNG "images/download3.png"
 //
-#define TEST_IMAGE_PNG "images/download4.png"
+//#define TEST_IMAGE_PNG "images/download4.png"
 
+#define TEST_IMAGE_PNG "images/triangles/drawing(1).png"
+
+//
 // Logger
 std::mutex CCLog::nanny_;
 //
@@ -165,6 +168,29 @@ int image_processor_test002(void) {
 }
 
 int image_processor_test003(void) {
+    CCImageProcessor imProcessor;
+    CCImageProcessorBuilder imBuilder;
+    CCImageReader imReal(TEST_IMAGE_PNG, CCImageSourceType::PNG, CCColorChannels::RGB), imGray;
+    bool ok;
+
+    assert(imReal.Load());
+    imGray = imReal.ConvertRGB2GRAY(ok);
+    assert(ok);
+
+    imProcessor = imBuilder.addGaussianFilter(5, 5, 2.0)
+                           .addSoebelFilter(3, 3, 1)
+                           .addShapeDetector(5)
+                           .build();
+    imProcessor.Run(imGray);
+    imProcessor.DetectObjects(imGray);
+    assert(imGray.Save());
+    assert(imGray.Destroy());
+    assert(imReal.Destroy());
+    std::cout << __func__ << ":" <<  "pass" << std::endl;
+    return 0;
+}
+
+int image_processor_test004(void) {
     Prng<int> prng;
     std::list<Pixel<int>> pixels;
     std::list<Pixel<int>> upperhull;
@@ -225,6 +251,30 @@ int image_processor_test003(void) {
     return 0;
 }
 
+int image_processor_test005(void) {
+    CCDataSet dataSet(TEST_IMAGE_DIR, CCDataSourceType::IMG);
+    assert(dataSet.LoadDirectory());
+    assert(dataSet.getNumRecords());
+    for (auto i : dataSet.dataItems_) {
+        CCImageProcessor imProcessor;
+        CCImageProcessorBuilder imBuilder;
+        imProcessor = imBuilder.addGaussianFilter(5, 5, 2.0)
+                               .addSoebelFilter(3, 3, 1)
+                               .addShapeDetector(5)
+                               .build();
+        CCImageReader *im = dynamic_cast<CCImageReader*>(i);
+        //assert(im->Load());
+        std::cout << "processing image " << im->getFilename() << std::endl;
+        //imProcessor.Run(*im);
+        //imProcessor.DetectObjects(*im);
+        //assert(im->Save());
+        //assert(im->Destroy());
+    }
+    dataSet.Destroy();
+    std::cout << __func__ << ":" <<  "pass" << std::endl;
+    return 0;
+}
+
 int main(void) {
     CCLog::Initialize(CC_LOGFILE);
     CCLog::SetLogLevel(CC_LOG_DEBUG);
@@ -235,8 +285,10 @@ int main(void) {
     dataset_file_load_test();
     dataset_dir_load_test();
     image_processor_test001();
-#endif
     image_processor_test002();
-    //image_processor_test003();
+    image_processor_test003();
+    image_processor_test004();
+#endif
+    image_processor_test005();
     return 0;
 }
