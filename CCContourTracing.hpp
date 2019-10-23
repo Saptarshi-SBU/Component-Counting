@@ -29,7 +29,7 @@
 #include "CCContour.hpp"
 #include "CCImageReader.hpp"
 
-#define CONTOUR_THRESHOLD_SIZE 20
+#define CONTOUR_THRESHOLD_SIZE 2
 
 #define dbg2_printf(...)
 

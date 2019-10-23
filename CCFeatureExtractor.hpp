@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef CCSHAPEDETECTOR_HPP_
-#define CCSHAPEDETECTOR_HPP_
+#ifndef CCFEATUREEXTRACTOR_HPP_
+#define CCFEATUREEXTRACTOR_HPP_
 
 #include <string.h>
 
@@ -33,15 +33,15 @@
 #include "CCContour.hpp"
 #include "CCContourTracing.hpp"
 
-class CCShapeDetector {
+class CCFeatureExtractor {
 
     public:
 
-    CCShapeDetector() {}
+    CCFeatureExtractor() {}
 
-    CCShapeDetector(int dist_threshold) : dist_threshold_(dist_threshold) {}
+    CCFeatureExtractor(int dist_threshold) : dist_threshold_(dist_threshold) {}
 
-    virtual ~CCShapeDetector() {}
+    virtual ~CCFeatureExtractor() {}
 
     void Run(CCImageReader &img) {
         byte *src;
@@ -64,6 +64,7 @@ class CCShapeDetector {
                 contour.makeConvexHull();
                 contour.ApproxPoly(dist_threshold_);
                 contour.drawContour(dst, width, height);
+                //contour.drawContourApprox(dst, width, height);
                 contours_list.push_back(contour);
             }
         }
@@ -72,35 +73,8 @@ class CCShapeDetector {
         delete dst;
     }
 
-    void DetectShapes(CCImageReader &img) {
-        byte *src;
-        int height, width, numChannels;
-
-        src    = img.getDataBlob();
-        height = img.getHeight();
-        width  = img.getWidth();
-        numChannels = img.getNumChannels();
-
-        byte *dst = new byte[height * width * numChannels];
-        memset(dst, 0, sizeof(byte) * width * height * numChannels);
-        for (auto &c : contours_list) {
-           unsigned int nr_vertices = c.getSize();
-           if (nr_vertices <= 2)
-               continue;
-
-           if (nr_vertices == 3) {
-              CC_DEBUG(c.getUUId(), "Triangle");
-           } else {
-              CC_DEBUG(c.getUUId(), "Polygon :", nr_vertices);
-           }
-
-           for (auto &p : c.boundaryPixels)
-              CC_DEBUG("CTOUR Pixel", c.getUUId(), p.getX(), p.getY());
-
-           c.drawContourApprox(dst, width, height);
-	    }
-        memcpy(src, dst, sizeof(byte) * width * height * numChannels);
-        delete dst;
+    std::list<Contour<int>> GetFeatures(void) {
+        return contours_list;
     }
 
     void GetAllPixels(CCImageReader &img) {
@@ -115,8 +89,8 @@ class CCShapeDetector {
             for (int j = 0; j < width; j++) {
                 Pixel<int> pixel(j, i);
                 int index = i * width + j;
-                if ((byte) src[index])
-                    printf("img %d %d\n", j, i);
+                if ((byte) src[index] == 255)
+                    printf("REALIMG %d %d %u\n", j, i, (byte) src[index]);
             }
         }
     }

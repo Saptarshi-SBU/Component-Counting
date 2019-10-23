@@ -31,15 +31,14 @@
 #define _CCIMAGEPROCESSOR_HPP_
 
 #include <memory>
+#include <vector>
 
 #include "CCConvolutionFilter.hpp"
 #include "CCGaussianFilter.hpp"
-
 #include "CCDerivativeFilter.hpp"
 #include "CCSoebelFilter.hpp"
-
-#include "CCShapeDetector.hpp"
-
+#include "CCFeatureExtractor.hpp"
+#include "CCImageClassifier.hpp"
 #include "CCImageReader.hpp"
 
 // Image processor
@@ -55,7 +54,7 @@ class CCImageProcessor {
 
    CCImageProcessor(std::shared_ptr<CCImageConvolutionFilter> pCV,
         std::shared_ptr<CCImageDerivativeFilter> pDV,
-        std::shared_ptr<CCShapeDetector> pSD) :
+        std::shared_ptr<CCFeatureExtractor> pSD) :
         pCV_(pCV), pDV_(pDV), pSD_(pSD) {}
 
    CCImageProcessor(const CCImageProcessor &proc) :
@@ -70,12 +69,15 @@ class CCImageProcessor {
             pDV_->Run(img);
        if (pSD_)
            pSD_->Run(img);
-           //pSD_->GetAllPixels(img);
+          //pSD_->GetAllPixels(img);
    }
 
-   virtual void DetectObjects(CCImageReader &img) {
-       if (pSD_)
-           pSD_->DetectShapes(img);
+   virtual bool Classify(CCImageReader &img, std::vector<int> &exp) {
+       if (pSD_) {
+           auto features = pSD_->GetFeatures();
+           return CCImageClassifier::DetectShapes(features, exp);
+       }
+       return false;
    }
 
    private:
@@ -84,7 +86,7 @@ class CCImageProcessor {
 
    std::shared_ptr<CCImageDerivativeFilter> pDV_;
 
-   std::shared_ptr<CCShapeDetector> pSD_;
+   std::shared_ptr<CCFeatureExtractor> pSD_;
 };
 
 //
@@ -120,7 +122,7 @@ class CCImageProcessorBuilder {
 
     virtual CCImageProcessorBuilder&
         addShapeDetector(int distance) {
-            pSD_.reset(new CCShapeDetector(distance));
+            pSD_.reset(new CCFeatureExtractor(distance));
             return *this;
     }
 
@@ -130,7 +132,7 @@ class CCImageProcessorBuilder {
 
     std::shared_ptr<CCImageDerivativeFilter> pDV_;
 
-    std::shared_ptr<CCShapeDetector> pSD_;
+    std::shared_ptr<CCFeatureExtractor> pSD_;
 };
 
 #endif

@@ -63,8 +63,8 @@ class CCSoebelFilter : public CCImageDerivativeFilter {
         uint8_t *imgData = img.getDataBlob();
         uint8_t *imgDst = new uint8_t[width * height * numChannel];
 
-        printf ("width :%d height :%d numChannels :%d\n",
-            width, height, numChannel);
+        //dbg_printf ("width :%d height :%d numChannels :%d\n",
+        //    width, height, numChannel);
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {

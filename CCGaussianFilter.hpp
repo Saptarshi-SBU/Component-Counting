@@ -86,8 +86,8 @@ class CCGaussianFilter : public CCImageConvolutionFilter {
         int numChannel = img.getNumChannels();
         uint8_t *imgData = img.getDataBlob();
 
-        printf ("width :%d height :%d numChannels :%d\n",
-            width, height, numChannel);
+        //printf ("width :%d height :%d numChannels :%d\n",
+        //    width, height, numChannel);
 
         float *storeBuffer = new float[width * height * numChannel];
 

@@ -35,6 +35,8 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
+#include "CCLogger.hpp"
+
 //If class members are neither mentioned in a constructor’s member initializer
 //list nor have a brace-or-equal-initializer, then they get default-initialized.
 //That means, that for class types the default constructor is called, but for
@@ -53,32 +55,35 @@ CCImageReader::CCImageReader():
 
 CCImageReader::CCImageReader(const char *filename, CCImageSourceType type) :
     CCDataObject(),
-    filename_(filename),
+    filename_(std::string(filename)),
     type_(type),
     desiredChannels_(CCColorChannels::DEFAULT) {}
 
 CCImageReader::CCImageReader(const char *filename, CCImageSourceType type, CCColorChannels channels) :
     CCDataObject(),
-    filename_(filename),
+    filename_(std::string(filename)),
     type_(type),
     desiredChannels_(channels) {}
 
 CCImageReader::CCImageReader(const CCImageReader &srcImg) {
     width_  = srcImg.width_;
     height_ = srcImg.height_;
-    desiredChannels_ = srcImg.desiredChannels_;
-    data_ = srcImg.data_;
     type_ = srcImg.type_;
+    numChannels_ = srcImg.numChannels_;
+    desiredChannels_ = srcImg.desiredChannels_;
+    data_ = (unsigned char *) stbi__malloc(sizeof(unsigned char) * width_ * height_ * numChannels_);
+    memcpy(data_, srcImg.data_, sizeof(unsigned char) * width_ * height_ * numChannels_);
+    std::cout << "numChannels :" << numChannels_ << std::endl;
 }
 
 CCImageReader::~CCImageReader() {}
 
 void CCImageReader::setFilename(const char *filename) {
-    filename_ = filename;
+    filename_ = std::string(filename);
 }
 
 const char * CCImageReader::getFilename(void) {
-    return filename_;
+    return filename_.c_str();
 }
 
 int CCImageReader::getWidth() {
@@ -142,19 +147,19 @@ bool CCImageReader::Load() {
 
     switch (desiredChannels_) {
     case CCColorChannels::DEFAULT:
-        data_ = stbi_load(filename_, &width_, &height_, &numChannels_, 0);
+        data_ = stbi_load(filename_.c_str(), &width_, &height_, &numChannels_, 0);
         break;
     case CCColorChannels::GRAY:
-        data_ = stbi_load(filename_, &width_, &height_, &numChannels_, STBI_grey);
+        data_ = stbi_load(filename_.c_str(), &width_, &height_, &numChannels_, STBI_grey);
         break;
     case CCColorChannels::GRAY2:
-        data_ = stbi_load(filename_, &width_, &height_, &numChannels_, STBI_grey_alpha);
+        data_ = stbi_load(filename_.c_str(), &width_, &height_, &numChannels_, STBI_grey_alpha);
         break;
     case CCColorChannels::RGB:
-        data_ = stbi_load(filename_, &width_, &height_, &numChannels_, STBI_rgb);
+        data_ = stbi_load(filename_.c_str(), &width_, &height_, &numChannels_, STBI_rgb);
         break;
     case CCColorChannels::RGBA:
-        data_ = stbi_load(filename_, &width_, &height_, &numChannels_, STBI_rgb_alpha);
+        data_ = stbi_load(filename_.c_str(), &width_, &height_, &numChannels_, STBI_rgb_alpha);
         break;
     default:
         assert(0);
@@ -189,7 +194,7 @@ bool CCImageReader::Save() {
     if ((data_ == nullptr) || (width_ == 0) || (height_ == 0))
         goto error;
 
-    if (!filename_) {
+    if (filename_.empty()) {
         name = generateUUIDName();
     } else
         name = std::string(filename_);
@@ -237,8 +242,10 @@ CCImageReader CCImageReader::ConvertRGB2GRAY(bool &ok) {
     } else if (cchannels == CCColorChannels::RGB) {
         newImg.setNumChannels(1);
         newImg.setColorChannels(CCColorChannels::GRAY);
-    } else
+    } else {
+        CC_ERR("image is already gray-scale");
         goto error;
+    }
 
     pData = (unsigned char *) stbi__malloc(sizeof(unsigned char) * newImg.getWidth() *
         newImg.getHeight() * newImg.getNumChannels());

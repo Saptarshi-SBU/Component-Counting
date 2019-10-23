@@ -182,7 +182,6 @@ int image_processor_test003(void) {
                            .addShapeDetector(5)
                            .build();
     imProcessor.Run(imGray);
-    imProcessor.DetectObjects(imGray);
     assert(imGray.Save());
     assert(imGray.Destroy());
     assert(imReal.Destroy());
@@ -252,10 +251,13 @@ int image_processor_test004(void) {
 }
 
 int image_processor_test005(void) {
+    int matchCount = 0, totalCount = 0;
     CCDataSet dataSet(TEST_IMAGE_DIR, CCDataSourceType::IMG);
     assert(dataSet.LoadDirectory());
     assert(dataSet.getNumRecords());
+    std::vector<int> ans{3,4};
     for (auto i : dataSet.dataItems_) {
+        bool ok;
         CCImageProcessor imProcessor;
         CCImageProcessorBuilder imBuilder;
         imProcessor = imBuilder.addGaussianFilter(5, 5, 2.0)
@@ -263,12 +265,19 @@ int image_processor_test005(void) {
                                .addShapeDetector(5)
                                .build();
         CCImageReader *im = dynamic_cast<CCImageReader*>(i);
-        //assert(im->Load());
+        assert(im->Load());
         std::cout << "processing image " << im->getFilename() << std::endl;
-        //imProcessor.Run(*im);
-        //imProcessor.DetectObjects(*im);
-        //assert(im->Save());
-        //assert(im->Destroy());
+        CC_DEBUG("processing image ", im->getFilename());
+        CCImageReader imGray = im->ConvertRGB2GRAY(ok);
+        assert(ok);
+        imProcessor.Run(imGray);
+        if (imProcessor.Classify(imGray, ans))
+            matchCount++;
+        totalCount++;
+        assert(imGray.Save());
+        assert(imGray.Destroy());
+        assert(im->Destroy());
+        std::cout << matchCount << "/" << totalCount << std::endl;
     }
     dataSet.Destroy();
     std::cout << __func__ << ":" <<  "pass" << std::endl;

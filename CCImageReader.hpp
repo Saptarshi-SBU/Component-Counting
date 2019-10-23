@@ -120,7 +120,7 @@ class CCImageReader : public CCDataObject {
    private:
 
    // file name
-   const char *filename_ {nullptr};
+   std::string filename_ ;
 
    // image type
    CCImageSourceType type_;

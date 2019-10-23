@@ -80,7 +80,7 @@ bool CCDataSet::LoadDirectory(void) {
             if ((strcmp(i->d_name, ".") != 0) && (strcmp(i->d_name, "..") != 0)) {
                 std::string path(static_cast<const char*>(source_));
                 path.append(i->d_name);
-                CCImageReader *imp = new CCImageReader(path.c_str(), CCImageSourceType::PNG);
+                CCImageReader *imp = new CCImageReader(path.c_str(), CCImageSourceType::PNG, CCColorChannels::RGB);
                 done = imp->Load();
                 if (!done) {
                     std::cerr << path << std::endl;
@@ -88,13 +88,7 @@ bool CCDataSet::LoadDirectory(void) {
                 }
                 // prevent object slicing
                 dataItems_.push_back(dynamic_cast<CCDataObject *>(imp));
-                std::cerr << "new image :" << imp->getFilename() << std::endl;
             }
-        }
-
-        for (auto &i : dataItems_) {
-            CCImageReader *im = dynamic_cast<CCImageReader*>(i);
-            std::cout << "processing image :" << im << ":" << im->getFilename() << std::endl;
         }
         break;
     }
