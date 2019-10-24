@@ -37,6 +37,8 @@
 #include "CCGaussianFilter.hpp"
 #include "CCDerivativeFilter.hpp"
 #include "CCSoebelFilter.hpp"
+#include "CCMorphologicalFilter.hpp"
+#include "CCErosionFilter.hpp"
 #include "CCFeatureExtractor.hpp"
 #include "CCImageClassifier.hpp"
 #include "CCImageReader.hpp"
@@ -50,26 +52,34 @@ class CCImageProcessor {
 
    CCImageProcessor(std::shared_ptr<CCImageConvolutionFilter> pCV,
         std::shared_ptr<CCImageDerivativeFilter> pDV) :
-        pCV_(pCV), pDV_(pDV) {}
+        pCV_(pCV), pDV_(pDV), pSD_(nullptr), pMF_(nullptr) {}
 
    CCImageProcessor(std::shared_ptr<CCImageConvolutionFilter> pCV,
         std::shared_ptr<CCImageDerivativeFilter> pDV,
         std::shared_ptr<CCFeatureExtractor> pSD) :
-        pCV_(pCV), pDV_(pDV), pSD_(pSD) {}
+        pCV_(pCV), pDV_(pDV), pSD_(pSD), pMF_(nullptr) {}
+
+   CCImageProcessor(std::shared_ptr<CCImageConvolutionFilter> pCV,
+        std::shared_ptr<CCImageDerivativeFilter> pDV,
+        std::shared_ptr<CCFeatureExtractor> pSD,
+        std::shared_ptr<CCMorphologicalFilter> pMF) :
+        pCV_(pCV), pDV_(pDV), pSD_(pSD), pMF_(pMF) {}
 
    CCImageProcessor(const CCImageProcessor &proc) :
-        pCV_(proc.pCV_), pDV_(proc.pDV_), pSD_(proc.pSD_) {}
+        pCV_(proc.pCV_), pDV_(proc.pDV_), pSD_(proc.pSD_), pMF_(proc.pMF_) {}
 
    virtual ~CCImageProcessor() {}
 
    virtual void Run(CCImageReader &img) {
+       if (pMF_)
+            pMF_->Run(img);
        if (pCV_)
             pCV_->Run(img);
        if (pDV_)
             pDV_->Run(img);
        if (pSD_)
-           pSD_->Run(img);
-          //pSD_->GetAllPixels(img);
+            pSD_->Run(img);
+       // pSD_->GetAllPixels(img);
    }
 
    virtual bool Classify(CCImageReader &img, std::vector<int> &exp) {
@@ -87,6 +97,8 @@ class CCImageProcessor {
    std::shared_ptr<CCImageDerivativeFilter> pDV_;
 
    std::shared_ptr<CCFeatureExtractor> pSD_;
+
+   std::shared_ptr<CCMorphologicalFilter> pMF_;
 };
 
 //
@@ -105,7 +117,7 @@ class CCImageProcessorBuilder {
     virtual ~CCImageProcessorBuilder() {}
 
     virtual CCImageProcessor build() {
-        return CCImageProcessor(pCV_, pDV_, pSD_);
+        return CCImageProcessor(pCV_, pDV_, pSD_, pMF_);
     }
 
     virtual CCImageProcessorBuilder&
@@ -117,6 +129,12 @@ class CCImageProcessorBuilder {
     virtual CCImageProcessorBuilder&
         addSoebelFilter(int dimX, int dimY, float variance) {
             pDV_.reset(new CCSoebelFilter(dimX, dimY, variance));
+            return *this;
+    }
+
+    virtual CCImageProcessorBuilder&
+        addMorphFilter(int dimX, int dimY) {
+            pMF_.reset(new CCErosionFilter(dimX, dimY));
             return *this;
     }
 
@@ -133,6 +151,8 @@ class CCImageProcessorBuilder {
     std::shared_ptr<CCImageDerivativeFilter> pDV_;
 
     std::shared_ptr<CCFeatureExtractor> pSD_;
+
+    std::shared_ptr<CCMorphologicalFilter> pMF_;
 };
 
 #endif

@@ -35,10 +35,13 @@
 #include "CCImageProcessor.hpp"
 #include "CCDominatingPoints.hpp"
 #include "CCConvexHull.hpp"
+#include "CCErosionFilter.hpp"
 
 #define MAX_UUIDS 100UL
 
-#define TEST_IMAGE_DIR "images/triangles/"
+//#define TEST_IMAGE_DIR "images/triangles/"
+
+#define TEST_IMAGE_DIR "images/squares/"
 
 //#define TEST_IMAGE_PNG "images/shapes/triangles/drawing(4).png"
 
@@ -50,7 +53,9 @@
 //
 //#define TEST_IMAGE_PNG "images/download4.png"
 
-#define TEST_IMAGE_PNG "images/triangles/drawing(1).png"
+//#define TEST_IMAGE_PNG "images/triangles/drawing(25).png"
+
+#define TEST_IMAGE_PNG "images/squares/drawing(1).png"
 
 //
 // Logger
@@ -136,6 +141,7 @@ int image_processor_test001(void) {
 
     imProcessor = imBuilder.addGaussianFilter(5, 5, 2.0)
                            .addSoebelFilter(3, 3, 1)
+                           .addMorphFilter(3, 3)
                            .build();
     imProcessor.Run(imGray);
     assert(imGray.Save());
@@ -172,6 +178,7 @@ int image_processor_test003(void) {
     CCImageProcessorBuilder imBuilder;
     CCImageReader imReal(TEST_IMAGE_PNG, CCImageSourceType::PNG, CCColorChannels::RGB), imGray;
     bool ok;
+    std::vector<int> ans{4, 4};
 
     assert(imReal.Load());
     imGray = imReal.ConvertRGB2GRAY(ok);
@@ -180,8 +187,10 @@ int image_processor_test003(void) {
     imProcessor = imBuilder.addGaussianFilter(5, 5, 2.0)
                            .addSoebelFilter(3, 3, 1)
                            .addShapeDetector(5)
+                           .addMorphFilter(3, 3)
                            .build();
     imProcessor.Run(imGray);
+    imProcessor.Classify(imGray, ans);
     assert(imGray.Save());
     assert(imGray.Destroy());
     assert(imReal.Destroy());
@@ -255,7 +264,7 @@ int image_processor_test005(void) {
     CCDataSet dataSet(TEST_IMAGE_DIR, CCDataSourceType::IMG);
     assert(dataSet.LoadDirectory());
     assert(dataSet.getNumRecords());
-    std::vector<int> ans{3,4};
+    std::vector<int> ans{4,4};
     for (auto i : dataSet.dataItems_) {
         bool ok;
         CCImageProcessor imProcessor;
@@ -298,6 +307,8 @@ int main(void) {
     image_processor_test003();
     image_processor_test004();
 #endif
-    image_processor_test005();
+    image_processor_test003();
+    //image_processor_test005();
+    //image_processor_test001();
     return 0;
 }
