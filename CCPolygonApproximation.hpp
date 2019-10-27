@@ -144,7 +144,7 @@ static int MergePoints(std::list<Pixel<T>> &polyPoints, float distance) {
         goto exit_approx;
 
     for (auto &p : polyPoints) {
-        CC_INFO("SPLITDATAPOINTS", p.getX(), p.getY());
+        CC_DEBUG("MergingBorderPixels", p.getX(), p.getY());
         sp.push(p);
     }
 

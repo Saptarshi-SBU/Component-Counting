@@ -42,6 +42,7 @@
 #include "CCFeatureExtractor.hpp"
 #include "CCImageClassifier.hpp"
 #include "CCImageReader.hpp"
+#include "CCThresholding.hpp"
 
 // Image processor
 class CCImageProcessor {
@@ -52,37 +53,52 @@ class CCImageProcessor {
 
    CCImageProcessor(std::shared_ptr<CCImageConvolutionFilter> pCV,
         std::shared_ptr<CCImageDerivativeFilter> pDV) :
-        pCV_(pCV), pDV_(pDV), pSD_(nullptr), pMF_(nullptr) {}
+        pCV_(pCV), pDV_(pDV), pSD_(nullptr), pMF_(nullptr), pThresh_(nullptr) {}
 
    CCImageProcessor(std::shared_ptr<CCImageConvolutionFilter> pCV,
         std::shared_ptr<CCImageDerivativeFilter> pDV,
         std::shared_ptr<CCFeatureExtractor> pSD) :
-        pCV_(pCV), pDV_(pDV), pSD_(pSD), pMF_(nullptr) {}
+        pCV_(pCV), pDV_(pDV), pSD_(pSD), pMF_(nullptr), pThresh_(nullptr) {}
 
    CCImageProcessor(std::shared_ptr<CCImageConvolutionFilter> pCV,
         std::shared_ptr<CCImageDerivativeFilter> pDV,
         std::shared_ptr<CCFeatureExtractor> pSD,
         std::shared_ptr<CCMorphologicalFilter> pMF) :
-        pCV_(pCV), pDV_(pDV), pSD_(pSD), pMF_(pMF) {}
+        pCV_(pCV), pDV_(pDV), pSD_(pSD), pMF_(pMF), pThresh_(nullptr) {}
+
+   CCImageProcessor(std::shared_ptr<CCImageConvolutionFilter> pCV,
+        std::shared_ptr<CCImageDerivativeFilter> pDV,
+        std::shared_ptr<CCFeatureExtractor> pSD,
+        std::shared_ptr<CCMorphologicalFilter> pMF,
+        std::shared_ptr<CCThresholding> pThresh) :
+        pCV_(pCV), pDV_(pDV), pSD_(pSD), pMF_(pMF), pThresh_(pThresh) {}
 
    CCImageProcessor(const CCImageProcessor &proc) :
-        pCV_(proc.pCV_), pDV_(proc.pDV_), pSD_(proc.pSD_), pMF_(proc.pMF_) {}
+        pCV_(proc.pCV_), pDV_(proc.pDV_), pSD_(proc.pSD_), pMF_(proc.pMF_), pThresh_(proc.pThresh_) {}
 
    virtual ~CCImageProcessor() {}
 
    virtual void Run(CCImageReader &img) {
        if (pMF_)
             pMF_->Run(img);
+
        if (pCV_)
             pCV_->Run(img);
+
        if (pDV_)
             pDV_->Run(img);
+
+       if (pThresh_)
+           pThresh_->Run(img);
+
+       // debugging
+       img.GetAllPixels(std::string("EDGE"));
+
        if (pSD_)
             pSD_->Run(img);
-       // pSD_->GetAllPixels(img);
    }
 
-   virtual bool Classify(CCImageReader &img, std::vector<int> &exp) {
+   virtual bool Classify(CCImageReader &img, std::vector<int> exp) {
        if (pSD_) {
            auto features = pSD_->GetFeatures();
            return CCImageClassifier::DetectShapes(features, exp);
@@ -99,6 +115,8 @@ class CCImageProcessor {
    std::shared_ptr<CCFeatureExtractor> pSD_;
 
    std::shared_ptr<CCMorphologicalFilter> pMF_;
+
+   std::shared_ptr<CCThresholding> pThresh_;
 };
 
 //
@@ -117,7 +135,7 @@ class CCImageProcessorBuilder {
     virtual ~CCImageProcessorBuilder() {}
 
     virtual CCImageProcessor build() {
-        return CCImageProcessor(pCV_, pDV_, pSD_, pMF_);
+        return CCImageProcessor(pCV_, pDV_, pSD_, pMF_, pThresh_);
     }
 
     virtual CCImageProcessorBuilder&
@@ -133,14 +151,20 @@ class CCImageProcessorBuilder {
     }
 
     virtual CCImageProcessorBuilder&
-        addMorphFilter(int dimX, int dimY) {
-            pMF_.reset(new CCErosionFilter(dimX, dimY));
+        addMorphFilter(int dimX, int dimY, int thresh) {
+            pMF_.reset(new CCErosionFilter(dimX, dimY, thresh));
             return *this;
     }
 
     virtual CCImageProcessorBuilder&
-        addShapeDetector(int distance) {
+        addFeatureExtractor(int distance) {
             pSD_.reset(new CCFeatureExtractor(distance));
+            return *this;
+    }
+
+    virtual CCImageProcessorBuilder&
+        addThresholding(int thresh) {
+            pThresh_.reset(new CCThresholding(thresh));
             return *this;
     }
 
@@ -153,6 +177,8 @@ class CCImageProcessorBuilder {
     std::shared_ptr<CCFeatureExtractor> pSD_;
 
     std::shared_ptr<CCMorphologicalFilter> pMF_;
+
+    std::shared_ptr<CCThresholding> pThresh_;
 };
 
 #endif

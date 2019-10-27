@@ -117,6 +117,8 @@ class CCImageReader : public CCDataObject {
 
    CCImageReader ConvertRGB2GRAY(bool &);
 
+   void GetAllPixels(std::string tag);
+
    private:
 
    // file name

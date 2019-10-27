@@ -39,7 +39,7 @@ class CCErosionFilter : public CCMorphologicalFilter {
     CCErosionFilter() : CCMorphologicalFilter() {
     }
 
-    CCErosionFilter(int m, int n) : CCMorphologicalFilter(m, n) {
+    CCErosionFilter(int m, int n, int t) : CCMorphologicalFilter(m, n, t) {
     }
 
     virtual ~CCErosionFilter() {
@@ -52,6 +52,8 @@ class CCErosionFilter : public CCMorphologicalFilter {
         uint8_t *imgData = img.getDataBlob();
         uint8_t *imgDst = new uint8_t[width * height * numChannel];
 
+        memset(imgDst, 0, sizeof(uint8_t) * width * height * numChannel);
+        
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 bool fmatch = true;
@@ -62,10 +64,15 @@ class CCErosionFilter : public CCMorphologicalFilter {
                     continue;
                 }
 
+                if (imgData[y * width + x] < thresh_)
+                    continue;
+                std::cout << "data0 " << x << " " << y << " d: "
+                          << (int)imgData[y * width +x] << std::endl;
+
                 // iterate structural element
                 for (int i = y - m_/2; i <= y + m_/2; i++) {
                     for (int j = x - n_/2; j <= x + n_/2; j++) {
-                        if (imgData[i * width + j] == 0) { // no full match
+                        if (imgData[i * width + j] < thresh_) { // no full match
                             fmatch = false;
                             goto out;
                         }
@@ -74,7 +81,7 @@ class CCErosionFilter : public CCMorphologicalFilter {
 
              out:
                 if (fmatch) {
-                    //std::cout << x << ":" << y << std::endl;
+                    std::cout << "data :" << x << " " << y << std::endl;
                     imgDst[y * width + x] = 255;
                 }
             }
@@ -82,7 +89,6 @@ class CCErosionFilter : public CCMorphologicalFilter {
 
         memcpy(imgData, imgDst, width * height * numChannel);
         delete imgDst;
-        std::cout << __func__ << std::endl;
     }
 };
 #endif

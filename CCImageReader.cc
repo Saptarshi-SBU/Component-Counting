@@ -35,7 +35,10 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
+#include "CCPixel.hpp"
 #include "CCLogger.hpp"
+
+typedef unsigned char byte;
 
 //If class members are neither mentioned in a constructor’s member initializer
 //list nor have a brace-or-equal-initializer, then they get default-initialized.
@@ -268,5 +271,23 @@ CCImageReader CCImageReader::ConvertRGB2GRAY(bool &ok) {
 error:
     ok = false;
     return newImg;
+}
+
+void CCImageReader::GetAllPixels(std::string tag) {
+    byte *src;
+    int height, width;
+
+    src    = getDataBlob();
+    height = getHeight();
+    width  = getWidth();
+
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            Pixel<int> pixel(x, y);
+            int index = y * width + x;
+            if ((byte) src[index])
+                CC_INFO(tag, UUidInfo().getString(), x, y, (int) src[index]);
+        }
+    }
 }
 

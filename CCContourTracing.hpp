@@ -69,6 +69,10 @@ IsBorderPixel(byte *Img, const Pixel<T> &start_pixel, int ImgHeight, int ImgWidt
         if (!IsPixelValid<T>(np, ImgWidth, ImgHeight))
             return false;
 
+        index = np.getY() * ImgWidth + np.getX();
+        if (!Img[index])
+            return false;
+
         traceDir.clockwise();
         entry_dir = traceDir.getDirection();
         do {
@@ -95,10 +99,13 @@ BorderFollowingStrategy(byte *Img,
                            const Pixel<T> &start_pixel,
                            int ImgHeight, int ImgWidth, byte *ImgDst,
                            std::list<Contour<T>> contours_list) {
-    int nc = 0;
+    int nc = 0, index;
     Contour<T> contour;
     PixelDirection traceDir;
     Pixel<T> curr_pixel(start_pixel), next_pixel, first_pixel;
+
+    if (!IsBorderPixel<T>(Img, curr_pixel, ImgHeight, ImgWidth))
+        return contour;
 
     traceDir.clockwise();
     contour.AddBoundaryPixel(curr_pixel);
@@ -106,8 +113,8 @@ BorderFollowingStrategy(byte *Img,
     PIXEL_TRACE("start pixel<start, current, next>",
         start_pixel, curr_pixel, start_pixel);
     // follow border pixels
-    while (nc < 8 && !IsPixelVisited<T>(next_pixel, contours_list)) {
-        int index;
+    //while (nc < 8 && !IsPixelVisited<T>(next_pixel, contours_list)) {
+    while (nc < 8) {
         if (!next_pixel.valid())
             goto nextbp;
         index = next_pixel.getY() * ImgWidth + next_pixel.getX();

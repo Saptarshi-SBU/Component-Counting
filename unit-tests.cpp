@@ -39,23 +39,26 @@
 
 #define MAX_UUIDS 100UL
 
+// triangle
+//#define RESULT_VERTICES 3
+
+// square
+//#define RESULT_VERTICES 4
+
+// circle
+#define RESULT_VERTICES 6
+
 //#define TEST_IMAGE_DIR "images/triangles/"
 
-#define TEST_IMAGE_DIR "images/squares/"
+//#define TEST_IMAGE_DIR "images/squares/"
 
-//#define TEST_IMAGE_PNG "images/shapes/triangles/drawing(4).png"
+#define TEST_IMAGE_DIR "images/circles/"
 
-//#define TEST_IMAGE_PNG "download.png"
-//
-//#define TEST_IMAGE_PNG "download2.png"
+//#define TEST_IMAGE_PNG "images/triangles/drawing(4).png"
 
-//#define TEST_IMAGE_PNG "images/download3.png"
-//
-//#define TEST_IMAGE_PNG "images/download4.png"
+//#define TEST_IMAGE_PNG "images/squares/drawing(1).png"
 
-//#define TEST_IMAGE_PNG "images/triangles/drawing(25).png"
-
-#define TEST_IMAGE_PNG "images/squares/drawing(1).png"
+#define TEST_IMAGE_PNG "images/circles/drawing(10).png"
 
 //
 // Logger
@@ -67,8 +70,7 @@ std::string CCLog::filename_;
 //
 CC_LOGLEVEL CCLog::level_ = CC_LOG_DEBUG;
 //
-bool CCConsoleLog::canLog = false;
-//
+bool CCConsoleLog::canLog = true;
 
 int uuid_dup_test(void) {
     std::set<std::string> uuid_strings;
@@ -138,10 +140,9 @@ int image_processor_test001(void) {
     assert(imReal.Load());
     imGray = imReal.ConvertRGB2GRAY(ok);
     assert(ok);
-
     imProcessor = imBuilder.addGaussianFilter(5, 5, 2.0)
                            .addSoebelFilter(3, 3, 1)
-                           .addMorphFilter(3, 3)
+                           //.addMorphFilter(3, 3, 255)
                            .build();
     imProcessor.Run(imGray);
     assert(imGray.Save());
@@ -163,7 +164,7 @@ int image_processor_test002(void) {
 
     imProcessor = imBuilder.addGaussianFilter(5, 5, 2.0)
                            .addSoebelFilter(3, 3, 1)
-                           .addShapeDetector(5)
+                           .addFeatureExtractor(5)
                            .build();
     imProcessor.Run(imGray);
     assert(imGray.Save());
@@ -173,32 +174,70 @@ int image_processor_test002(void) {
     return 0;
 }
 
-int image_processor_test003(void) {
+int image_processor_test003(int matchValue) {
     CCImageProcessor imProcessor;
     CCImageProcessorBuilder imBuilder;
     CCImageReader imReal(TEST_IMAGE_PNG, CCImageSourceType::PNG, CCColorChannels::RGB), imGray;
+    std::vector<int> result {matchValue};
     bool ok;
-    std::vector<int> ans{4, 4};
 
     assert(imReal.Load());
     imGray = imReal.ConvertRGB2GRAY(ok);
     assert(ok);
-
     imProcessor = imBuilder.addGaussianFilter(5, 5, 2.0)
                            .addSoebelFilter(3, 3, 1)
-                           .addShapeDetector(5)
-                           .addMorphFilter(3, 3)
+                           .addThresholding(60)
+                           //.addMorphFilter(3, 3, 80)
+                           .addFeatureExtractor(1)
                            .build();
     imProcessor.Run(imGray);
-    imProcessor.Classify(imGray, ans);
+    if (imProcessor.Classify(imGray, result))
+        std::cout << __func__ << ":" <<  "pass" << std::endl;
+    else
+        assert(0);
     assert(imGray.Save());
     assert(imGray.Destroy());
     assert(imReal.Destroy());
+    return 0;
+}
+
+int image_processor_test004(int matchValue) {
+    int matchCount = 0, totalCount = 0;
+    CCDataSet dataSet(TEST_IMAGE_DIR, CCDataSourceType::IMG);
+    assert(dataSet.LoadDirectory());
+    assert(dataSet.getNumRecords());
+    for (auto i : dataSet.dataItems_) {
+        bool ok;
+        std::vector<int> result {matchValue};
+        CCImageProcessor imProcessor;
+        CCImageProcessorBuilder imBuilder;
+        imProcessor = imBuilder.addGaussianFilter(5, 5, 2.0)
+                               .addSoebelFilter(3, 3, 1)
+                               .addThresholding(60)
+                               //.addMorphFilter(3, 3, 150)
+                               .addFeatureExtractor(1)
+                               .build();
+        CCImageReader *im = dynamic_cast<CCImageReader*>(i);
+        assert(im->Load());
+        CC_INFO("processing image ", im->getFilename());
+        CONSOLE_INFO("processing image ", im->getFilename());
+        CCImageReader imGray = im->ConvertRGB2GRAY(ok);
+        assert(ok);
+        imProcessor.Run(imGray);
+        if (imProcessor.Classify(imGray, result))
+            matchCount++;
+        totalCount++;
+        assert(imGray.Save());
+        assert(imGray.Destroy());
+        assert(im->Destroy());
+        std::cout << matchCount << "/" << totalCount << std::endl;
+    }
+    dataSet.Destroy();
     std::cout << __func__ << ":" <<  "pass" << std::endl;
     return 0;
 }
 
-int image_processor_test004(void) {
+int polygon_approx_test(void) {
     Prng<int> prng;
     std::list<Pixel<int>> pixels;
     std::list<Pixel<int>> upperhull;
@@ -225,8 +264,6 @@ int image_processor_test004(void) {
         std::cout << "HULL " << p.getX() << " " << p.getY() << std::endl;
     } 
 
-    //CalculateConvexHullGradient<int>(convexhull);
-    //
     polyPointsApprox.push_back(*convexhull.begin());
     polyPointsApprox.push_back(*convexhull.rbegin());
 
@@ -259,56 +296,20 @@ int image_processor_test004(void) {
     return 0;
 }
 
-int image_processor_test005(void) {
-    int matchCount = 0, totalCount = 0;
-    CCDataSet dataSet(TEST_IMAGE_DIR, CCDataSourceType::IMG);
-    assert(dataSet.LoadDirectory());
-    assert(dataSet.getNumRecords());
-    std::vector<int> ans{4,4};
-    for (auto i : dataSet.dataItems_) {
-        bool ok;
-        CCImageProcessor imProcessor;
-        CCImageProcessorBuilder imBuilder;
-        imProcessor = imBuilder.addGaussianFilter(5, 5, 2.0)
-                               .addSoebelFilter(3, 3, 1)
-                               .addShapeDetector(5)
-                               .build();
-        CCImageReader *im = dynamic_cast<CCImageReader*>(i);
-        assert(im->Load());
-        std::cout << "processing image " << im->getFilename() << std::endl;
-        CC_DEBUG("processing image ", im->getFilename());
-        CCImageReader imGray = im->ConvertRGB2GRAY(ok);
-        assert(ok);
-        imProcessor.Run(imGray);
-        if (imProcessor.Classify(imGray, ans))
-            matchCount++;
-        totalCount++;
-        assert(imGray.Save());
-        assert(imGray.Destroy());
-        assert(im->Destroy());
-        std::cout << matchCount << "/" << totalCount << std::endl;
-    }
-    dataSet.Destroy();
-    std::cout << __func__ << ":" <<  "pass" << std::endl;
-    return 0;
-}
-
 int main(void) {
     CCLog::Initialize(CC_LOGFILE);
-    CCLog::SetLogLevel(CC_LOG_DEBUG);
+    CCLog::SetLogLevel(CC_LOG_INFO);
 #if 0
     uuid_dup_test();
     img_load_test();
     img_convert_RGB2GRAY_test();
     dataset_file_load_test();
     dataset_dir_load_test();
+    polygon_approx_test();
     image_processor_test001();
     image_processor_test002();
-    image_processor_test003();
-    image_processor_test004();
+    image_processor_test003(RESULT_VERTICES);
 #endif
-    image_processor_test003();
-    //image_processor_test005();
-    //image_processor_test001();
+    image_processor_test004(RESULT_VERTICES);
     return 0;
 }

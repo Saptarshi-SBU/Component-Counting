@@ -50,45 +50,62 @@ class CCImageClassifier {
 
    ~CCImageClassifier() {}
 
-   static bool DetectShapes(std::list<Contour<int>> &featureVector,
-                            std::vector<int> &expected) {
+   static std::vector<int> CountVertices(std::list<Contour<int>> &approxContours) {
         std::vector<int> result;
 
-        for (auto &c : featureVector) {
-           unsigned int nr_vertices = c.getSize();
+        for (auto &c : approxContours) {
 
+           int nr_vertices = c.getSize();
            if (nr_vertices <= 2)
                continue;
 
-           std::cout << "classifying object :" << std::endl;
-           CC_DEBUG("classifying object");
+           CC_INFO("classifying object");
+           CONSOLE_INFO("classifying object :")
 
-           std::cout << "Polygon ID " << c.getUUId() << " (" << nr_vertices << ")" << std::endl;
-           CC_DEBUG("Polygon ID ", c.getUUId(), "(", nr_vertices, ")");
+           CC_INFO("Polygon ID ", c.getUUId(), "(", nr_vertices, ")");
+           CONSOLE_INFO("Polygon ID", c.getUUId(), " (", nr_vertices, ")");
            
            std::cout << "[" << " ";
            for (auto &p : c.boundaryPixels) {
               std::cout << " (" << p.getX() << "," << p.getY() << ")" << ",";
-              CC_DEBUG("CTOUR Pixel", c.getUUId(), p.getX(), p.getY());
+              CC_INFO("CTOUR", c.getUUId(), p.getX(), p.getY());
            }
            std::cout << "]" << " " << std::endl;
            result.push_back(nr_vertices);
         }
 
-        std::sort(result.begin(), result.end());
-        std::sort(expected.begin(), expected.end());
+        // Get rid of boundary square
+        auto it = std::find(result.begin(), result.end(), 4);
+        if (it != result.end())
+            result.erase(it);
 
-        if (std::equal(result.begin(), result.end(), expected.begin())) {
-            std::cout << "MATCH" << std::endl;
-            CC_DEBUG("MATCH");
-            return true;
-        } else {
-            std::cout << "MISMATCH" << std::endl;
-            CC_DEBUG("MISMATCH");
-            return false;
-        }
+        return result;
    }
 
-   private:
+   static bool DetectShapes(std::list<Contour<int>> &approxContours,
+                            std::vector<int> vertices) {
+        std::vector<int> result;
+
+        result = CCImageClassifier::CountVertices(approxContours);
+        if (!result.size())
+            goto error;
+
+        for (int &v : vertices) {
+            auto it = std::find(result.begin(), result.end(), v);
+            if (it != result.end())
+                result.erase(it);
+            else
+                goto error;
+        }
+
+        CC_INFO("MATCH");
+        CONSOLE_INFO("MATCH");
+        return true;
+
+        error:
+        CC_INFO("MISMATCH");
+        CONSOLE_INFO("MISMATCH");
+        return false;
+   }
 };
 #endif

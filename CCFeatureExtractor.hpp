@@ -33,6 +33,15 @@
 #include "CCContour.hpp"
 #include "CCContourTracing.hpp"
 
+template<class T>
+static bool IsKnownContour(Contour<T> contour, const std::list<Contour<T>> &contours_list) {
+    for (auto c : contours_list) {
+        if (contour.matchContour(c))
+            return true;
+    }
+    return false;
+}
+
 class CCFeatureExtractor {
 
     public:
@@ -56,7 +65,7 @@ class CCFeatureExtractor {
         memset(dst, 0, sizeof(byte) * width * height * numChannels);
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                Pixel<int> pixel(i, j);
+                Pixel<int> pixel(j, i);
                 Contour<int> contour =
                     BorderFollowingStrategy<int>(src, pixel, height, width, dst, contours_list);
                 if (contour.empty())
@@ -65,7 +74,8 @@ class CCFeatureExtractor {
                 contour.ApproxPoly(dist_threshold_);
                 contour.drawContour(dst, width, height);
                 //contour.drawContourApprox(dst, width, height);
-                contours_list.push_back(contour);
+                if (!IsKnownContour(contour, contours_list))
+                    contours_list.push_back(contour);
             }
         }
 
@@ -75,24 +85,6 @@ class CCFeatureExtractor {
 
     std::list<Contour<int>> GetFeatures(void) {
         return contours_list;
-    }
-
-    void GetAllPixels(CCImageReader &img) {
-        byte *src;
-        int height, width;
-
-        src    = img.getDataBlob();
-        height = img.getHeight();
-        width  = img.getWidth();
-
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-                Pixel<int> pixel(j, i);
-                int index = i * width + j;
-                if ((byte) src[index] == 255)
-                    printf("REALIMG %d %d %u\n", j, i, (byte) src[index]);
-            }
-        }
     }
 
     private:

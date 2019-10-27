@@ -114,22 +114,33 @@ struct Contour {
         return sum;
     }
 
+    bool matchContour(Contour<T> ctour) {
+        if (getSize() == ctour.getSize()) {
+             for (auto &p : boundaryPixels) {
+                 if (!ctour.FindPixel(p))
+                     return false;
+             }
+             return true;
+        } else
+            return false;
+    }
+
     void ResetContour(void) {
         boundaryPixels.clear();
     }
 
     void makeConvexHull(void) {
         for (auto &p : boundaryPixels) 
-            CC_INFO("BorderPixels", p.getX(), p.getY());
+            CC_INFO("BP", getUUId(), p.getX(), p.getY());
 
         boundaryPixels = MakeConvexHull<T>(boundaryPixels);
         for (auto &p : boundaryPixels) 
-            CC_INFO("HullPixels", p.getX(), p.getY());
+            CC_INFO("HP", getUUId(), p.getX(), p.getY());
     }
 
     void ApproxPoly(int distance) {
         size_t size = getLength();
-        CC_INFO("contour perimeter", size, 0.01 * size);
+        CC_DEBUG("contour perimeter", size, 0.01 * size);
         std::list<Pixel<int>> polyPointsApprox, polyPoints;
 
         polyPointsApprox.push_back(*boundaryPixels.begin());
@@ -149,12 +160,12 @@ struct Contour {
             }
         }
 
-        CC_INFO("polypoints (split-phase) :", polyPoints.size());
-        MergePoints<int>(polyPoints, 10);
-        MergePoints<int>(polyPoints, 10);
+        CC_DEBUG("polypoints (split-phase) :", polyPoints.size());
+        MergePoints<int>(polyPoints, 2*distance);
+        MergePoints<int>(polyPoints, 2*distance);
         boundaryPixels = polyPoints;
         for (auto &p : boundaryPixels) 
-            CC_INFO("MergedBorderPixels", p.getX(), p.getY());
+            CC_DEBUG("MergedBorderPixels", p.getX(), p.getY());
     }
 
     void drawContour(unsigned char *Img, int ImgWidth, int ImgHeight) {

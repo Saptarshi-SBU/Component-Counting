@@ -36,14 +36,16 @@ class CCMorphologicalFilter {
 
     public:
 
-    CCMorphologicalFilter() : m_(3), n_(3) {
+    CCMorphologicalFilter() : m_(3), n_(3), thresh_(255) {
     }
 
-    CCMorphologicalFilter(int m, int n) : m_(m), n_(n) {
+    CCMorphologicalFilter(int m, int n, int thresh) :
+        m_(m), n_(n), thresh_(thresh) {
     }
 
     CCMorphologicalFilter(const CCMorphologicalFilter &er) {
         m_ = er.m_;
+        thresh_ = er.thresh_;
     }
 
     CCMorphologicalFilter& operator=(const CCMorphologicalFilter &er) {
@@ -62,5 +64,7 @@ class CCMorphologicalFilter {
     int m_; // row
 
     int n_; // col
+
+    int thresh_; // pixel threshold
 };
 #endif

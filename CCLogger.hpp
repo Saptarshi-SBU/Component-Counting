@@ -74,7 +74,7 @@ class CCLog {
         if (logfile && ostreamp_ == nullptr) {
             ostreamp_ = new std::ofstream();
             assert(ostreamp_);
-            ostreamp_->open(logfile, std::ofstream::out | std::ofstream::app);
+            ostreamp_->open(logfile, std::ofstream::out | std::ofstream::trunc);
             if (!ostreamp_->is_open()) {
                 printf("warn: error opening log file: %s, logging will be disabled\n",
                     strerror(errno));
