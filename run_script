@@ -1,4 +1,0 @@
-cat ccfile.log | grep EDGE  | awk '{ print $7, $8, $9 }' > /tmp/edge.dat
-cat ccfile.log | grep BP    | awk '{ print $7, $8, $9 }' > /tmp/bp.dat
-cat ccfile.log | grep CTOUR | awk '{ print $7, $8, $9 }' > /tmp/result.dat
-python ccfile.py /tmp/edge.dat /tmp/bp.dat /tmp/result.dat

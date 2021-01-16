@@ -1,0 +1,5 @@
+ 1012  pip install --user tensorflow
+ 1013  pip install --user keras
+ 1014  dnf install hdf5
+ 1015  pip install --user h5py
+
