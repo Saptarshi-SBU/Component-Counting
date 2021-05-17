@@ -34,5 +34,14 @@ B)
  2. git clone https://github.com/Saptarshi-SBU/Component-Counting.git
  3. cd Component-Counting/src/ml/object_detection/
  4. conda install -c anaconda pandas
- 6. conda install -c conda-forge matplotlib
- 7. jupyter notebook
+ 5. conda install -c conda-forge matplotlib
+ 6. jupyter notebook
+
+# Running training & validation with our dataset
+ 
+ Below are the steps to perform a sample training & inference
+  
+ 1. epochs = 8
+ 2. batch_size = 4
+ 3. md = train_dataset('data', epochs, batch_size, max_files=16)
+ 4. eval_dataset(md, 'data', max_files=16)

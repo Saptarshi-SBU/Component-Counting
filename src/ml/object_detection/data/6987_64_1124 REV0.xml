@@ -1,0 +1,194 @@
+<annotation>
+	<folder>drawing in jpg</folder>
+	<filename>6987_64_1124 REV0.jpg</filename>
+	<path>data/Annotations/6987_64_1124 REV0.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>3509</width>
+		<height>4963</height>
+		<depth>1</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>ball valve</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>2335</xmin>
+			<ymin>1399</ymin>
+			<xmax>2358</xmax>
+			<ymax>1452</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>ball valve</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>2328</xmin>
+			<ymin>1499</ymin>
+			<xmax>2361</xmax>
+			<ymax>1567</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>ball valve</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>2329</xmin>
+			<ymin>1646</ymin>
+			<xmax>2372</xmax>
+			<ymax>1725</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>ball valve</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>1171</xmin>
+			<ymin>1664</ymin>
+			<xmax>1199</xmax>
+			<ymax>1716</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>ball valve</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>1164</xmin>
+			<ymin>1722</ymin>
+			<xmax>1197</xmax>
+			<ymax>1772</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>ball valve</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>1281</xmin>
+			<ymin>1955</ymin>
+			<xmax>1332</xmax>
+			<ymax>1997</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>ball valve</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>1388</xmin>
+			<ymin>1899</ymin>
+			<xmax>1426</xmax>
+			<ymax>1959</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>ball valve</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>1452</xmin>
+			<ymin>1954</ymin>
+			<xmax>1507</xmax>
+			<ymax>1988</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>ball valve</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>1257</xmin>
+			<ymin>2577</ymin>
+			<xmax>1304</xmax>
+			<ymax>2612</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>ball valve</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>1301</xmin>
+			<ymin>2590</ymin>
+			<xmax>1332</xmax>
+			<ymax>2620</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>ball valve</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>1236</xmin>
+			<ymin>2732</ymin>
+			<xmax>1287</xmax>
+			<ymax>2771</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>ball valve</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>1293</xmin>
+			<ymin>2777</ymin>
+			<xmax>1329</xmax>
+			<ymax>2833</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>ball valve</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>1529</xmin>
+			<ymin>3265</ymin>
+			<xmax>1590</xmax>
+			<ymax>3297</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>ball valve</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>1797</xmin>
+			<ymin>3107</ymin>
+			<xmax>1825</xmax>
+			<ymax>3165</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>ball valve</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>1778</xmin>
+			<ymin>3259</ymin>
+			<xmax>1852</xmax>
+			<ymax>3297</ymax>
+		</bndbox>
+	</object>
+</annotation>
